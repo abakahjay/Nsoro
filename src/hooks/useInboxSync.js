@@ -17,9 +17,11 @@ export const useInboxSync = (enabled) => {
 		if (!enabled || !token) return;
 		let cancelled = false;
 		let timer;
+		// the chat that's open counts as read, even before the server has caught up
+		const openChat = pathname.match(/^\/messages\/([^/]+)/)?.[1];
 		const load = () =>
 			API.get("/api/v1/messages/conversations")
-				.then(({ data }) => !cancelled && setSummary(data.conversations))
+				.then(({ data }) => !cancelled && setSummary(data.conversations.map((c) => (c.user._id === openChat ? { ...c, unread: 0 } : c))))
 				.catch(() => {});
 		// small delay so a chat's "mark read" lands first
 		const refresh = () => {

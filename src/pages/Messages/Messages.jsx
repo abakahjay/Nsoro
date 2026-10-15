@@ -60,7 +60,7 @@ export default function MessagesPage() {
 }
 
 function Inbox({ activeId }) {
-	const { conversations, isLoading } = useConversations();
+	const { conversations, isLoading } = useConversations(activeId);
 	const authUser = useAuthStore((state) => state.user);
 	const me = authUser?.user || authUser;
 	const myId = getAuthUserId(authUser);
@@ -114,7 +114,7 @@ function Inbox({ activeId }) {
 								</Text>
 								<Text color={unread ? "ig.text" : "ig.secondary"} fontWeight={unread ? "semibold" : "normal"} fontSize='xs' noOfLines={1}>
 									{lastMessage.sender === myId ? "You: " : ""}
-									{lastMessage.type === "voice" ? "🎤 Voice message" : lastMessage.message} · {timeAgo(new Date(lastMessage.timestamp).getTime())}
+									{previewText(lastMessage, myId)} · {timeAgo(new Date(lastMessage.timestamp).getTime())}
 								</Text>
 							</Box>
 							{unread > 0 && <Box w='8px' h='8px' borderRadius='full' bg='ig.link' flexShrink={0} aria-label={`${unread} unread`} />}
@@ -127,6 +127,13 @@ function Inbox({ activeId }) {
 		</Box>
 	);
 }
+
+const previewText = (m, myId) => {
+	if (m.type === "voice") return "🎤 Voice message";
+	if (m.type !== "call") return m.message;
+	const kind = m.callKind === "video" ? "video call" : "voice call";
+	return m.callStatus !== "completed" && m.sender !== myId ? `Missed ${kind}` : kind[0].toUpperCase() + kind.slice(1);
+};
 
 // Right pane before a chat is picked (tablets and up).
 function EmptyChat() {

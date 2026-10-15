@@ -94,6 +94,15 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 - `useChat` handles live `messageUpdated` and `messageDeleted` socket events, plus edit (PATCH `/messages/:id/edit`), unsend (DELETE `/messages/:id`) and voice notes (POST `/messages/voice`, multipart field `audio`).
 - `useVoiceRecorder` picks webm/opus or mp4 (Safari) and caps a note at 60 s.
 - Your own messages have a menu that opens on hover (the "⋯" button), long-press or right-click.
+- The chat groups messages by day under sticky "Today" / "Yesterday" / weekday / date headers (`utils/chatDates.js`). Tapping a message shows its full sent time.
+- `useChat` and `useInboxSync` treat the open chat as read immediately, and `useChat` fires `inbox:refresh` after your own send, edit or unsend. The server never echoes your own messages back to the tab that sent them.
+
+**Voice and video calls.**
+- Calls are WebRTC between the two browsers. `utils/call.js` holds the peer connection and actions (`startCall`, `acceptCall`, `hangUp`, …), and `store/useCallStore.js` holds the state.
+- `hooks/useCallSync.js` (mounted by PageLayout) binds the socket events. `components/Call/CallScreen.jsx` is the full-screen UI, also mounted in PageLayout so a call survives navigation.
+- Signaling is FullBackendd `utils/socket.js`: `call:invite` / `incoming` / `accept` / `accepted` / `decline` / `end` / `ended` / `signal`. Calls ring for 35 s.
+- When a call ends, the server saves a `type: 'call'` message (`callKind`, `callStatus`, `duration`) that shows in the chat and inbox.
+- Only public STUN is configured. Callers behind strict NATs need a TURN server via `VITE_TURN_URL`, `VITE_TURN_USERNAME` and `VITE_TURN_CREDENTIAL`.
 
 **Emails.** The email on/off switch is in EditProfile (PATCH `/api/v1/instagram/settings/email`). `/admin/updates` sends an app-update email to everyone; it's only for `user.role === "admin"`, set with the backend's `scripts/makeInstagramAdmin.js`.
 

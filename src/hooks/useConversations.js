@@ -6,7 +6,9 @@ import useShowToast from "./useShowToast";
 
 // The signed-in user's inbox: [{ user, lastMessage, unread }], newest first.
 // Refreshes whenever a message arrives over the socket.
-const useConversations = () => {
+// `activeId`: the chat that's open right now - it shows as read straight away,
+// without waiting for the server's mark-read round trip.
+const useConversations = (activeId) => {
 	const [conversations, setConversations] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const showToast = useShowToast();
@@ -50,7 +52,8 @@ const useConversations = () => {
 		};
 	}, [load, token]);
 
-	return { conversations, isLoading };
+	const shown = activeId ? conversations.map((c) => (c.user._id === activeId && c.unread ? { ...c, unread: 0 } : c)) : conversations;
+	return { conversations: shown, isLoading };
 };
 
 export default useConversations;

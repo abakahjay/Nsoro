@@ -9,6 +9,8 @@ import useAuthStore from "../../store/useAuthStore.js";
 import { useNotificationsSync } from "../../hooks/useNotifications.js";
 import { useInboxSync } from "../../hooks/useInboxSync.js";
 import MessagesPill from "../../components/NavBar/MessagesPill.jsx";
+import CallScreen from "../../components/Call/CallScreen.jsx";
+import { useCallSync } from "../../hooks/useCallSync.js";
 
 const PageLayout = ({ authUser, onLogout, children }) => {
     const {isLoading } = useAuthStore()
@@ -24,6 +26,7 @@ const PageLayout = ({ authUser, onLogout, children }) => {
     const showMobileTopBar = showMobileBars && pathname !== "/reels";
     useNotificationsSync(!!canRenderSidebar);
     useInboxSync(!!canRenderSidebar);
+    useCallSync(!!canRenderSidebar);
     const inMessages = pathname.startsWith("/messages");
     if (checkingUserIsAuth) return <PageLayoutSpinner />;
     return (
@@ -46,6 +49,7 @@ const PageLayout = ({ authUser, onLogout, children }) => {
                 {showMobileBars && <MobileBottomNav authUser={authUser} onLogout={onLogout} />}
                 {/* instagram.com's floating Messages pill - tablets and up, not on the messages pages */}
                 {canRenderSidebar && !inMessages && <MessagesPill />}
+                {canRenderSidebar && <CallScreen />}
 
                 {/* Portfolio badge - this is a clone/demo project */}
                 <Link

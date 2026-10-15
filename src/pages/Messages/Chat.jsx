@@ -15,7 +15,7 @@ import {
 	Text,
 } from "@chakra-ui/react";
 import { ArrowBackIcon, DeleteIcon } from "@chakra-ui/icons";
-import { IoSend } from "react-icons/io5";
+import { IoCall, IoCallOutline, IoSend, IoVideocam, IoVideocamOutline } from "react-icons/io5";
 import { BsMicFill, BsPauseFill, BsPlayFill, BsThreeDots } from "react-icons/bs";
 import { Link as RouterLink, useParams } from "react-router-dom";
 import useChat from "../../hooks/useChat";
@@ -23,6 +23,8 @@ import useVoiceRecorder, { MAX_VOICE_SECONDS } from "../../hooks/useVoiceRecorde
 import useShowToast from "../../hooks/useShowToast";
 import { useGetUserById } from "../../hooks/useGetUserById";
 import { mediaUrl } from "../../utils/media";
+import { startCall } from "../../utils/call";
+import { dayLabel, fullDateTime, groupByDay, timeLabel } from "../../utils/chatDates";
 
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 const LONG_PRESS_MS = 450;
@@ -67,6 +69,12 @@ export default function ChatPage() {
 		setDraft("");
 	};
 
+	const call = async (kind) => {
+		if (!userProfile) return;
+		const error = await startCall({ ...userProfile, _id: otherUserId }, kind);
+		if (error) showToast("Call", error, "error");
+	};
+
 	const finishRecording = async () => {
 		const result = await recorder.stop();
 		if (result) sendVoice(result.blob, result.duration);
@@ -84,6 +92,10 @@ export default function ChatPage() {
 				) : (
 					<Text fontWeight='bold'>…</Text>
 				)}
+				<Flex ml='auto' gap={1}>
+					<IconButton aria-label='Voice call' icon={<IoCallOutline />} variant='ghost' fontSize='24px' borderRadius='full' isDisabled={!userProfile} onClick={() => call("audio")} />
+					<IconButton aria-label='Video call' icon={<IoVideocamOutline />} variant='ghost' fontSize='26px' borderRadius='full' isDisabled={!userProfile} onClick={() => call("video")} />
+				</Flex>
 			</Flex>
 
 			<Box flex={1} overflowY='auto' px={4} py={4}>
@@ -97,18 +109,29 @@ export default function ChatPage() {
 						Say hi to {userProfile?.username || "them"} 👋
 					</Text>
 				)}
-				{messages.map((msg) => (
-					<MessageRow
-						key={msg._id}
-						msg={msg}
-						mine={msg.sender === myId}
-						menuOpen={menuFor === msg._id}
-						onOpenMenu={() => setMenuFor(msg._id)}
-						onCloseMenu={() => setMenuFor(null)}
-						onEdit={() => startEdit(msg)}
-						onUnsend={() => unsendMessage(msg._id)}
-						onCopy={() => navigator.clipboard?.writeText(msg.message).then(() => showToast("Copied", "", "success", 1200))}
-					/>
+				{/* one block per day, each with a sticky "Today" / "Yesterday" / date header */}
+				{groupByDay(messages).map((day) => (
+					<Box key={day.key}>
+						<Flex position='sticky' top='-16px' zIndex={1} justifyContent='center' py={2} pointerEvents='none'>
+							<Text fontSize='xs' fontWeight='semibold' color='ig.secondary' bg='ig.bg' border='1px solid' borderColor='ig.border' px={3} py={1} borderRadius='full'>
+								{dayLabel(day.date)}
+							</Text>
+						</Flex>
+						{day.items.map((msg) => (
+							<MessageRow
+								key={msg._id}
+								msg={msg}
+								mine={msg.sender === myId}
+								menuOpen={menuFor === msg._id}
+								onOpenMenu={() => setMenuFor(msg._id)}
+								onCloseMenu={() => setMenuFor(null)}
+								onEdit={() => startEdit(msg)}
+								onUnsend={() => unsendMessage(msg._id)}
+								onCopy={() => navigator.clipboard?.writeText(msg.message).then(() => showToast("Copied", "", "success", 1200))}
+								onCallBack={call}
+							/>
+						))}
+					</Box>
 				))}
 				{isOtherTyping && (
 					<Text fontSize='sm' color='gray.400' fontStyle='italic'>
@@ -170,15 +193,24 @@ export default function ChatPage() {
 	);
 }
 
-function MessageRow({ msg, mine, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUnsend, onCopy }) {
+function MessageRow({ msg, mine, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUnsend, onCopy, onCallBack }) {
 	const pressTimer = useRef(null);
+	const longPressed = useRef(false);
+	const [showSent, setShowSent] = useState(false); // tap a message to see exactly when it was sent
 	const isVoice = msg.type === "voice";
-	const canAct = mine && !msg.pending && !msg.failed;
+	const isCall = msg.type === "call";
+	const canAct = mine && !msg.pending && !msg.failed && !isCall;
 
 	// Long-press on phones opens the menu (like Instagram); right-click on computers.
 	const pressHandlers = canAct
 		? {
-				onTouchStart: () => (pressTimer.current = setTimeout(onOpenMenu, LONG_PRESS_MS)),
+				onTouchStart: () => {
+					longPressed.current = false;
+					pressTimer.current = setTimeout(() => {
+						longPressed.current = true;
+						onOpenMenu();
+					}, LONG_PRESS_MS);
+				},
 				onTouchEnd: () => clearTimeout(pressTimer.current),
 				onTouchMove: () => clearTimeout(pressTimer.current),
 				onContextMenu: (e) => {
@@ -188,52 +220,95 @@ function MessageRow({ msg, mine, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUn
 		  }
 		: {};
 
+	const toggleSent = (e) => {
+		if (longPressed.current || e.target.closest("button")) return; // not after opening the menu or tapping play
+		setShowSent((v) => !v);
+	};
+
 	return (
-		<Flex justifyContent={mine ? "flex-end" : "flex-start"} alignItems='center' mb={2} gap={1} role='group'>
-			{canAct && (
-				<Menu isOpen={menuOpen} onClose={onCloseMenu} placement='left' isLazy>
-					<MenuButton
-						as={IconButton}
-						aria-label='Message options'
-						icon={<BsThreeDots />}
-						size='xs'
-						variant='ghost'
-						borderRadius='full'
-						opacity={menuOpen ? 1 : 0}
-						_groupHover={{ opacity: 1 }}
-						_focusVisible={{ opacity: 1 }}
-						onClick={onOpenMenu}
-					/>
-					<MenuList bg='gray.800' borderColor='whiteAlpha.300' minW='150px'>
-						{!isVoice && <MenuItem bg='transparent' onClick={onEdit}>Edit</MenuItem>}
-						{!isVoice && <MenuItem bg='transparent' onClick={onCopy}>Copy</MenuItem>}
-						<MenuItem bg='transparent' color='red.300' onClick={onUnsend}>
-							Unsend
-						</MenuItem>
-					</MenuList>
-				</Menu>
+		<Box mb={2}>
+			<Flex justifyContent={mine ? "flex-end" : "flex-start"} alignItems='center' gap={1} role='group'>
+				{canAct && (
+					<Menu isOpen={menuOpen} onClose={onCloseMenu} placement='left' isLazy>
+						<MenuButton
+							as={IconButton}
+							aria-label='Message options'
+							icon={<BsThreeDots />}
+							size='xs'
+							variant='ghost'
+							borderRadius='full'
+							opacity={menuOpen ? 1 : 0}
+							_groupHover={{ opacity: 1 }}
+							_focusVisible={{ opacity: 1 }}
+							onClick={onOpenMenu}
+						/>
+						<MenuList bg='gray.800' borderColor='whiteAlpha.300' minW='150px'>
+							{!isVoice && <MenuItem bg='transparent' onClick={onEdit}>Edit</MenuItem>}
+							{!isVoice && <MenuItem bg='transparent' onClick={onCopy}>Copy</MenuItem>}
+							<MenuItem bg='transparent' color='red.300' onClick={onUnsend}>
+								Unsend
+							</MenuItem>
+						</MenuList>
+					</Menu>
+				)}
+				<Box
+					maxW='75%'
+					px={isVoice ? 3 : 4}
+					py={2}
+					borderRadius='2xl'
+					bg={mine ? "blue.500" : "whiteAlpha.200"}
+					color='white'
+					opacity={msg.pending ? 0.6 : 1}
+					wordBreak='break-word'
+					whiteSpace='pre-wrap'
+					userSelect={canAct ? "none" : "text"}
+					sx={{ WebkitTouchCallout: "none" }}
+					title={fullDateTime(msg.timestamp)}
+					cursor='pointer'
+					onClick={toggleSent}
+					{...pressHandlers}
+				>
+					{isCall ? <CallLog msg={msg} mine={mine} onCallBack={onCallBack} /> : isVoice ? <VoiceNote msg={msg} /> : msg.message}
+					<Text fontSize='10px' mt={1} textAlign='right' color={msg.failed ? "red.200" : "whiteAlpha.700"}>
+						{msg.failed ? "Not sent" : `${msg.editedAt ? "Edited · " : ""}${timeLabel(msg.timestamp)}`}
+					</Text>
+				</Box>
+			</Flex>
+			{showSent && (
+				<Text fontSize='11px' color='ig.secondary' textAlign={mine ? "right" : "left"} mt={1} px={1}>
+					{mine ? "Sent" : "Received"} {fullDateTime(msg.timestamp)}
+					{msg.editedAt ? ` · edited ${fullDateTime(msg.editedAt)}` : ""}
+				</Text>
 			)}
-			<Box
-				maxW='75%'
-				px={isVoice ? 3 : 4}
-				py={2}
-				borderRadius='2xl'
-				bg={mine ? "blue.500" : "whiteAlpha.200"}
-				color='white'
-				opacity={msg.pending ? 0.6 : 1}
-				wordBreak='break-word'
-				whiteSpace='pre-wrap'
-				userSelect={canAct ? "none" : "text"}
-				sx={{ WebkitTouchCallout: "none" }}
-				{...pressHandlers}
-			>
-				{isVoice ? <VoiceNote msg={msg} /> : msg.message}
-				<Text fontSize='10px' mt={1} textAlign='right' color={msg.failed ? "red.200" : "whiteAlpha.700"}>
-					{msg.failed
-						? "Not sent"
-						: `${msg.editedAt ? "Edited · " : ""}${new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+		</Box>
+	);
+}
+
+// A call in the chat history, like Instagram's "Video call · 2:31" / "Missed voice call".
+// The button starts the same kind of call again.
+function CallLog({ msg, mine, onCallBack }) {
+	const video = msg.callKind === "video";
+	const label = video ? "Video call" : "Voice call";
+	const missed = msg.callStatus !== "completed";
+	const title = missed && !mine ? `Missed ${label.toLowerCase()}` : label;
+	const detail =
+		msg.callStatus === "completed" ? fmt(msg.duration || 0) : msg.callStatus === "declined" ? (mine ? "Declined" : "You declined") : mine ? "No answer" : "Call back";
+	const Icon = video ? IoVideocam : IoCall;
+
+	return (
+		<Flex alignItems='center' gap={3} minW='180px'>
+			<Flex w='36px' h='36px' borderRadius='full' bg={missed && !mine ? "red.500" : "whiteAlpha.300"} alignItems='center' justifyContent='center' flexShrink={0}>
+				<Icon />
+			</Flex>
+			<Box flex={1} minW={0}>
+				<Text fontWeight='semibold' fontSize='sm'>
+					{title}
+				</Text>
+				<Text fontSize='xs' color='whiteAlpha.800'>
+					{detail}
 				</Text>
 			</Box>
+			<IconButton aria-label={`Call back (${label.toLowerCase()})`} icon={<Icon />} size='sm' borderRadius='full' variant='ghost' color='white' onClick={() => onCallBack(video ? "video" : "audio")} />
 		</Flex>
 	);
 }

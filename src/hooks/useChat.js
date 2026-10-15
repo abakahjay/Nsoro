@@ -6,6 +6,9 @@ import useAuthStore from "../store/useAuthStore";
 import useShowToast from "./useShowToast";
 
 const auth = () => ({ Authorization: `Bearer ${getAuthToken()}` });
+// The server doesn't echo our own messages back to this tab, so tell the inbox
+// list / unread badge to reload after we send, edit or unsend.
+const refreshInbox = () => window.dispatchEvent(new Event("inbox:refresh"));
 
 // A live one-to-one conversation with `otherUserId`: loads the history over REST,
 // then sends/receives over socket.io. The backend takes the sender from the JWT.
@@ -29,7 +32,7 @@ const useChat = (otherUserId) => {
 	const markRead = useCallback(() => {
 		// once saved, tell the inbox list and the unread badges to refresh
 		API.patch(`/api/v1/messages/conversations/${otherUserId}/read`, null, { headers: auth() })
-			.then(() => window.dispatchEvent(new Event("inbox:refresh")))
+			.then(refreshInbox)
 			.catch(() => {});
 	}, [otherUserId]);
 
@@ -111,6 +114,7 @@ const useChat = (otherUserId) => {
 					})
 				);
 				if (error) showToast("Error", error, "error");
+				else refreshInbox();
 			});
 		},
 		[token, myId, otherUserId, showToast]
@@ -125,6 +129,7 @@ const useChat = (otherUserId) => {
 			try {
 				const { data } = await API.patch(`/api/v1/messages/${messageId}/edit`, { message }, { headers: auth() });
 				setMessages((prev) => prev.map((m) => (m._id === messageId ? data : m)));
+				refreshInbox();
 			} catch (error) {
 				if (before) setMessages((prev) => prev.map((m) => (m._id === messageId ? before : m)));
 				showToast("Couldn't edit", error.response?.data?.error || error.message, "error");
@@ -140,6 +145,7 @@ const useChat = (otherUserId) => {
 			setMessages((prev) => prev.filter((m) => m._id !== messageId));
 			try {
 				await API.delete(`/api/v1/messages/${messageId}`, { headers: auth() });
+				refreshInbox();
 			} catch (error) {
 				setMessages(before);
 				showToast("Couldn't unsend", error.response?.data?.error || error.message, "error");
@@ -167,6 +173,7 @@ const useChat = (otherUserId) => {
 					const withoutTemp = prev.filter((m) => m._id !== tempId);
 					return withoutTemp.some((m) => m._id === data._id) ? withoutTemp : [...withoutTemp, data];
 				});
+				refreshInbox();
 			} catch (error) {
 				setMessages((prev) => prev.map((m) => (m._id === tempId ? { ...m, pending: false, failed: true } : m)));
 				showToast("Voice message not sent", error.response?.data?.error || error.message, "error");
