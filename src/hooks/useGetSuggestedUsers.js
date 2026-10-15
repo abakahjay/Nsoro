@@ -4,7 +4,7 @@ import API from "../utils/api";
 
 // "Suggested for you": people you don't follow yet, most mutual connections first.
 // Each gets `mutuals` - usernames of people you follow who follow them - for
-// Instagram's "Followed by x + 2 more" line.
+// The "Followed by x + 2 more" line.
 const useGetSuggestedUsers = (me) => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [suggestedUsers, setSuggestedUsers] = useState([]);

@@ -19,7 +19,7 @@ const PageLayout = ({ authUser, onLogout, children }) => {
 	const checkingUserIsAuth = !user && isLoading;
 	const canRenderSidebar = pathname !== "/auth"&&user;
     const canRenderNavbar =pathname !== "/auth"&&!user;
-    // An open chat is full-screen on phones, like the Instagram app.
+    // An open chat is full-screen on phones, like a native app.
     const inChat = pathname.startsWith("/messages/");
     const showMobileBars = canRenderSidebar && !inChat;
     // Reels are full-bleed on phones: no top bar, just the bottom tabs (like the app).
@@ -47,7 +47,7 @@ const PageLayout = ({ authUser, onLogout, children }) => {
                     {children}
                 </Box>
                 {showMobileBars && <MobileBottomNav authUser={authUser} onLogout={onLogout} />}
-                {/* instagram.com's floating Messages pill - tablets and up, not on the messages pages */}
+                {/* floating Messages pill - tablets and up, not on the messages pages */}
                 {canRenderSidebar && !inMessages && <MessagesPill />}
                 {canRenderSidebar && <CallScreen />}
 

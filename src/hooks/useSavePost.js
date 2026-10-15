@@ -4,7 +4,7 @@ import { getAuthToken } from "../utils/auth";
 import useAuthStore from "../store/useAuthStore";
 import useShowToast from "./useShowToast";
 
-// Instagram's bookmark: toggles the post in the signed-in user's `saved` list
+// The bookmark: toggles the post in the signed-in user's `saved` list
 // (PATCH /api/v1/posts/:postId/save) and mirrors it on the store's user.
 const useSavePost = (post) => {
 	const authUser = useAuthStore((state) => state.user);

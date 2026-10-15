@@ -1,12 +1,23 @@
-<<<<<<< HEAD
-# React + Vite
+# Nsoro
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Nsoro** (Twi *nsoromma*, "star") is a photo and video social app: posts, reels, stories,
+direct messages with voice notes, and voice and video calls.
 
-Currently, two official plugins are available:
+- Web: https://instagrammmm-z34p.onrender.com
+- Install: open `/download` on the site (Android APK, Windows installer, or add to the Home Screen on iPhone/iPad/Mac)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-=======
-# InstagramClone2abakah
->>>>>>> d43ec24aeffc24b9d29dc402da54665869b0c25d
+## Tech
+
+React 18 + Vite, Chakra UI, Zustand. The API, real-time messaging and call signaling come
+from the separate FullBackendd server (`VITE_API_URL`).
+
+## Develop
+
+```bash
+npm install
+npm run dev     # http://localhost:7005
+npm run build
+node scripts/generate-icons.mjs   # regenerate every app icon and logo (needs Chrome)
+```
+
+The Windows app lives in `desktop/` (`npm install && npm run dist`).

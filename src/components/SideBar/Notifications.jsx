@@ -3,7 +3,7 @@ import { Link as RouterLink } from "react-router-dom";
 import { NotificationsLogo } from "../../assets/constants";
 import useNotificationStore from "../../store/useNotificationStore";
 
-// Red dot/count over an icon, like Instagram's activity badge.
+// Red dot/count over an icon (unread activity).
 export const UnreadBadge = ({ count }) =>
 	count > 0 ? (
 		<Box

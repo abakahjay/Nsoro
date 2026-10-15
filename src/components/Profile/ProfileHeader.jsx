@@ -6,7 +6,7 @@ import useFollowUser from "../../hooks/useFollowUser";
 import useShowToast from "../../hooks/useShowToast";
 import { Link as RouterLink } from "react-router-dom";
 
-// Instagram's profile header. Phones: avatar beside the counts, name/bio below,
+// Profile header. Phones: avatar beside the counts, name/bio below,
 // full-width buttons. Tablet/desktop: big avatar on the left, everything else on the right.
 export default function ProfileHeader({authUser,onLogout,username,owner}) {
       const user=authUser.user?authUser.user:authUser

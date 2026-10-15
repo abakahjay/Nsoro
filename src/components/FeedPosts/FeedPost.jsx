@@ -3,7 +3,7 @@ import PostHeader from './PostHeader'
 import PostFooter from './PostFooter'
 import { Box } from '@chakra-ui/react'
 import { keyframes } from '@emotion/react'
-import { AiFillHeart } from 'react-icons/ai'
+import { PiHeartFill } from 'react-icons/pi'
 import { useGetUserById } from '../../hooks/useGetUserById';
 import useLikePost from '../../hooks/useLikePost';
 import PostMedia from './PostMedia';
@@ -26,7 +26,7 @@ export default function FeedPost({post}) {
     const [showHeart, setShowHeart] = useState(0);
     const lastTap = useRef(0);
 
-    // Double-tap (touch) or double-click to like, like Instagram. Never unlikes.
+    // Double-tap (touch) or double-click to like. Never unlikes.
     const handleTap = () => {
         const now = Date.now();
         if (now - lastTap.current < 300) {
@@ -59,7 +59,7 @@ export default function FeedPost({post}) {
 						filter='drop-shadow(0 0 8px rgba(0,0,0,0.5))'
 						animation={`${heartPop} 1s ease-out forwards`}
 					>
-						<AiFillHeart size={96} />
+						<PiHeartFill size={96} />
 					</Box>
 				)}
 			</Box>

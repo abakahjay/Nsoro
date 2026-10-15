@@ -213,6 +213,12 @@ export const bindCallEvents = (s) => {
 		store().reset();
 		store().set({ status: "incoming", callId: invite.callId, kind: invite.kind, peer: { ...invite.caller, _id: invite.from } });
 		startTone("ring");
+		s.emit("call:ringing", { callId: invite.callId }); // caller's screen: "Ringing…"
+	};
+
+	// Their phone has the call - in the app, or as a notification while it's closed.
+	const onRinging = ({ callId }) => {
+		if (callId === store().callId && store().status === "outgoing") store().set({ ringing: true });
 	};
 
 	const onAccepted = async ({ callId }) => {
@@ -255,11 +261,13 @@ export const bindCallEvents = (s) => {
 	};
 
 	s.on("call:incoming", onIncoming);
+	s.on("call:ringing", onRinging);
 	s.on("call:accepted", onAccepted);
 	s.on("call:signal", onSignal);
 	s.on("call:ended", onEnded);
 	return () => {
 		s.off("call:incoming", onIncoming);
+		s.off("call:ringing", onRinging);
 		s.off("call:accepted", onAccepted);
 		s.off("call:signal", onSignal);
 		s.off("call:ended", onEnded);

@@ -42,11 +42,11 @@ const EditProfile = ({ isOpen, onClose}) => {
 	const [savingEmailPref, setSavingEmailPref] = useState(false);
 	const emailOn = user.emailNotifications !== false;
 
-	// Saves straight away, like Instagram's settings toggles.
+	// Saves straight away, like a settings toggle in a phone app.
 	const toggleEmails = async (on) => {
 		setSavingEmailPref(true);
 		try {
-			await API.patch("/api/v1/instagram/settings/email", { emailNotifications: on }, { headers: { Authorization: `Bearer ${getAuthToken()}` } });
+			await API.patch("/api/v1/nsoro/settings/email", { emailNotifications: on }, { headers: { Authorization: `Bearer ${getAuthToken()}` } });
 			setAuthUser({ ...user, emailNotifications: on });
 			showToast(on ? "Emails on" : "Emails off", on ? "We'll email you about followers, comments, messages and updates." : "You won't get emails from us.", "success", 2000);
 		} catch (error) {

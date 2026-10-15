@@ -132,7 +132,7 @@ export default function App(){
             ),
         },
         {
-            // share links - public, like instagram.com/p/...
+            // share links - public, anyone with the link can open them
             path: '/p/:postId',
             element: (
                 <PageLayout authUser={authUser} onLogout={handleLogout}>

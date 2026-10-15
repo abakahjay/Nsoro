@@ -162,7 +162,7 @@ function useCreatePost() {
 		try {
 			formDatas2.append('caption',caption)
 			// logged-in route: the author comes from the token, not the URL
-			const data=await fetch(`${apiUrl}/api/v1/instagram/posts`,{
+			const data=await fetch(`${apiUrl}/api/v1/nsoro/posts`,{
 				method: 'POST',
 				headers: { Authorization: `Bearer ${getAuthToken()}` },
 				body: formDatas2,

@@ -52,7 +52,7 @@ TestResults.xml
 
 # Desktop app build output (published as a GitHub Release, not committed)
 desktop/release/
-# Android signing keys live in "Instagram App Packages" on the Desktop - never commit them
+# Android signing keys live in the app-packages folder on the owner's Desktop - never commit them
 *.keystore
 *.jks
 signing-key-info.txt

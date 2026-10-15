@@ -1,6 +1,6 @@
 import { Box, Flex, Link } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import { AiFillHome } from "react-icons/ai";
+import { PiHouseFill } from "react-icons/pi";
 import { NsoroLogo, MessagesLogo, NotificationsLogo, ReelsLogo, SearchLogo } from "../../assets/constants";
 import CreatePost from "../SideBar/CreatePost";
 import ProfileLink from "../SideBar/ProfileLink";
@@ -8,7 +8,7 @@ import { UnreadBadge } from "../SideBar/Notifications";
 import useNotificationStore from "../../store/useNotificationStore";
 import useInboxStore from "../../store/useInboxStore";
 
-// Phone layout (below the `md` breakpoint), like the Instagram app: a top bar with the
+// Phone layout (below the `md` breakpoint), like a native app: a top bar with the
 // logo + activity/messages, and a fixed bottom tab bar. PageLayout hides the sidebar there.
 export const MOBILE_TOP_BAR_H = "56px";
 export const MOBILE_BOTTOM_BAR_H = "56px";
@@ -75,7 +75,7 @@ export function MobileBottomNav({ authUser, onLogout }) {
 			justifyContent='space-around'
 		>
 			<IconLink to='/' label='Home'>
-				<AiFillHome size={25} />
+				<PiHouseFill size={25} />
 			</IconLink>
 			<IconLink to='/search' label='Search'>
 				<SearchLogo />

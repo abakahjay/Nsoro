@@ -22,7 +22,7 @@ const useFollowUser = (userId) => {
             // console.log('userId:',userId)
             if (isFollowing) {
                 // unfollow
-                const datas=await API.patch(`/api/v1/instagram/users/${userId}/unfollow`)
+                const datas=await API.patch(`/api/v1/nsoro/users/${userId}/unfollow`)
                 const frs=await datas.data
                 console.log(frs)
                 if(frs.error){
@@ -42,7 +42,7 @@ const useFollowUser = (userId) => {
 
             } else {
                 // follow
-                const data=await API.patch(`/api/v1/instagram/users/${userId}/follow`)
+                const data=await API.patch(`/api/v1/nsoro/users/${userId}/follow`)
                 const fr=await data.data
                 if(fr.error){
                     throw new Error(fr.error)

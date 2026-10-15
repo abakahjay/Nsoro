@@ -16,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import { ArrowBackIcon, DeleteIcon } from "@chakra-ui/icons";
 import { IoCall, IoCallOutline, IoSend, IoVideocam, IoVideocamOutline } from "react-icons/io5";
-import { BsMicFill, BsPauseFill, BsPlayFill, BsThreeDots } from "react-icons/bs";
+import { BsCheck2, BsCheck2All, BsClock, BsMicFill, BsPauseFill, BsPlayFill, BsThreeDots } from "react-icons/bs";
 import { Link as RouterLink, useParams } from "react-router-dom";
 import useChat from "../../hooks/useChat";
 import useVoiceRecorder, { MAX_VOICE_SECONDS } from "../../hooks/useVoiceRecorder";
@@ -33,7 +33,7 @@ const LONG_PRESS_MS = 450;
 export default function ChatPage() {
 	const { id: otherUserId } = useParams();
 	const { userProfile, profileImageUrl } = useGetUserById(otherUserId);
-	const { myId, messages, isLoading, isOtherTyping, sendMessage, editMessage, unsendMessage, sendVoice, notifyTyping } = useChat(otherUserId);
+	const { myId, messages, isLoading, tickState, isOtherTyping, sendMessage, editMessage, unsendMessage, sendVoice, notifyTyping } = useChat(otherUserId);
 	const [draft, setDraft] = useState("");
 	const [editing, setEditing] = useState(null); // message being edited
 	const [menuFor, setMenuFor] = useState(null);
@@ -42,9 +42,12 @@ export default function ChatPage() {
 	const showToast = useShowToast();
 	const recorder = useVoiceRecorder({ onAutoStop: ({ blob, duration }) => sendVoice(blob, duration) });
 
+	// "Seen" goes under the newest of my messages they've read
+	const lastSeenId = [...messages].reverse().find((m) => m.sender === myId && m.type !== "call" && tickState(m) === "read")?._id;
+
 	useEffect(() => {
 		bottomRef.current?.scrollIntoView({ block: "end" });
-	}, [messages.length, isOtherTyping]);
+	}, [messages.length, isOtherTyping, lastSeenId]);
 
 	useEffect(() => {
 		if (recorder.error) showToast("Microphone", recorder.error, "error");
@@ -129,6 +132,8 @@ export default function ChatPage() {
 								onUnsend={() => unsendMessage(msg._id)}
 								onCopy={() => navigator.clipboard?.writeText(msg.message).then(() => showToast("Copied", "", "success", 1200))}
 								onCallBack={call}
+								ticks={msg.sender === myId && !msg.failed && msg.type !== "call" ? tickState(msg) : null}
+								seen={msg._id === lastSeenId}
 							/>
 						))}
 					</Box>
@@ -193,7 +198,7 @@ export default function ChatPage() {
 	);
 }
 
-function MessageRow({ msg, mine, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUnsend, onCopy, onCallBack }) {
+function MessageRow({ msg, mine, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUnsend, onCopy, onCallBack, ticks, seen }) {
 	const pressTimer = useRef(null);
 	const longPressed = useRef(false);
 	const [showSent, setShowSent] = useState(false); // tap a message to see exactly when it was sent
@@ -201,7 +206,7 @@ function MessageRow({ msg, mine, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUn
 	const isCall = msg.type === "call";
 	const canAct = mine && !msg.pending && !msg.failed && !isCall;
 
-	// Long-press on phones opens the menu (like Instagram); right-click on computers.
+	// Long-press on phones opens the menu; right-click on computers.
 	const pressHandlers = canAct
 		? {
 				onTouchStart: () => {
@@ -269,11 +274,17 @@ function MessageRow({ msg, mine, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUn
 					{...pressHandlers}
 				>
 					{isCall ? <CallLog msg={msg} mine={mine} onCallBack={onCallBack} /> : isVoice ? <VoiceNote msg={msg} /> : msg.message}
-					<Text fontSize='10px' mt={1} textAlign='right' color={msg.failed ? "red.200" : "whiteAlpha.700"}>
-						{msg.failed ? "Not sent" : `${msg.editedAt ? "Edited · " : ""}${timeLabel(msg.timestamp)}`}
-					</Text>
+					<Flex fontSize='10px' mt={1} justifyContent='flex-end' alignItems='center' gap={1} color={msg.failed ? "red.200" : "whiteAlpha.700"}>
+						<Text>{msg.failed ? "Not sent" : `${msg.editedAt ? "Edited · " : ""}${timeLabel(msg.timestamp)}`}</Text>
+						{ticks && <Ticks state={ticks} />}
+					</Flex>
 				</Box>
 			</Flex>
+			{seen && !showSent && (
+				<Text fontSize='11px' color='ig.secondary' textAlign='right' mt={1} px={1}>
+					Seen
+				</Text>
+			)}
 			{showSent && (
 				<Text fontSize='11px' color='ig.secondary' textAlign={mine ? "right" : "left"} mt={1} px={1}>
 					{mine ? "Sent" : "Received"} {fullDateTime(msg.timestamp)}
@@ -284,12 +295,29 @@ function MessageRow({ msg, mine, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUn
 	);
 }
 
-// A call in the chat history, like Instagram's "Video call · 2:31" / "Missed voice call".
+// WhatsApp-style receipts on my messages.
+const TICKS = {
+	pending: { icon: BsClock, color: "whiteAlpha.700", label: "Sending" },
+	sent: { icon: BsCheck2, color: "whiteAlpha.700", label: "Sent" },
+	delivered: { icon: BsCheck2All, color: "whiteAlpha.700", label: "Delivered" },
+	read: { icon: BsCheck2All, color: "#5ff4ff", label: "Read" }, // bright aqua: stands out on the blue bubble
+};
+function Ticks({ state }) {
+	const { icon: Icon, color, label } = TICKS[state];
+	return (
+		<Box as='span' color={color} fontSize={state === "pending" ? "10px" : "15px"} lineHeight={0} aria-label={label} title={label}>
+			<Icon />
+		</Box>
+	);
+}
+
+// A call in the chat history: "Video call · 2:31" / "Missed voice call".
 // The button starts the same kind of call again.
 function CallLog({ msg, mine, onCallBack }) {
 	const video = msg.callKind === "video";
 	const label = video ? "Video call" : "Voice call";
-	const missed = msg.callStatus !== "completed";
+	// "Missed" only for calls nobody answered - not ones you declined yourself
+	const missed = msg.callStatus === "missed";
 	const title = missed && !mine ? `Missed ${label.toLowerCase()}` : label;
 	const detail =
 		msg.callStatus === "completed" ? fmt(msg.duration || 0) : msg.callStatus === "declined" ? (mine ? "Declined" : "You declined") : mine ? "No answer" : "Call back";

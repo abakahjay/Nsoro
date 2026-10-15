@@ -1,4 +1,4 @@
-// Share a post the way Instagram does on each platform: the native share sheet on
+// Share a post the best way for each platform: the native share sheet on
 // phones/tablets (WhatsApp, Messages...), copy-link on desktop browsers without it.
 // Returns "shared" | "copied" | "cancelled" | "failed".
 export const postLink = (post) => `${window.location.origin}/p/${post._id}`;

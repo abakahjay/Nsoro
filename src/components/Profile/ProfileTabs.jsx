@@ -1,15 +1,15 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { BsBookmark, BsGrid3X3, BsSuitHeart } from "react-icons/bs";
+import { PiBookmarkSimpleBold, PiGridFourBold, PiHeartBold } from "react-icons/pi";
 import { ReelsLogo } from "../../assets/constants";
 
 const TABS = [
-	{ key: "posts", label: "Posts", icon: <BsGrid3X3 /> },
+	{ key: "posts", label: "Posts", icon: <PiGridFourBold /> },
 	{ key: "reels", label: "Reels", icon: <ReelsLogo /> },
-	{ key: "saved", label: "Saved", icon: <BsBookmark />, ownerOnly: true },
-	{ key: "likes", label: "Likes", icon: <BsSuitHeart /> },
+	{ key: "saved", label: "Saved", icon: <PiBookmarkSimpleBold />, ownerOnly: true },
+	{ key: "likes", label: "Likes", icon: <PiHeartBold /> },
 ];
 
-// Saved is private, so it only shows on your own profile - same as Instagram.
+// Saved is private, so it only shows on your own profile.
 const ProfileTabs = ({ active = "posts", onChange, isOwner }) => {
 	return (
 		<Flex

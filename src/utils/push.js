@@ -3,7 +3,7 @@ import { detectDevice, isInstalled } from "./install";
 
 // Device notifications (Web Push) for this app. The service worker side is
 // public/push-sw.js; the backend side is FullBackendd utils/push.js.
-const APP = "instagram";
+const APP = "nsoro";
 
 export const pushSupported = () =>
     typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;

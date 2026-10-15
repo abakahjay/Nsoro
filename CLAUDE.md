@@ -4,11 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-**Nsoro** (Twi *nsoromma*, "star"): a photo/video social app, originally built as an Instagram clone. Frontend: React 18 + Vite (JavaScript/JSX, no TypeScript), Chakra UI for all styling, Zustand for state. It is a pure client. All data comes from a separate Express backend (not in this repo) reached through `VITE_API_URL`. Deployed on Vercel. `vercel.json` rewrites every path to `/` so client-side routing works.
+**Nsoro** (Twi *nsoromma*, "star"): a photo/video social app. Frontend: React 18 + Vite (JavaScript/JSX, no TypeScript), Chakra UI for all styling, Zustand for state. It is a pure client. All data comes from a separate Express backend (not in this repo) reached through `VITE_API_URL`. Deployed on Vercel. `vercel.json` rewrites every path to `/` so client-side routing works.
 
 ## Branding
 
-The product is called **Nsoro**. It must not use Instagram's or Meta's name, logo, gradient or artwork in anything a user sees (it is published to app stores). Code comments may still compare behaviour with Instagram. Brand colours: green `#0a7a4b`, `#2f9e44`, gold `#f2b705`. The logo is `public/icons/nsoro-logo.svg` (`NsoroMark`/`NsoroLogo` in `src/assets/constants.jsx`); `public/logo.png` and `public/auth.png` are Nsoro artwork. The repo name, the Render URL, the `/api/v1/instagram` API path and the Android package id `com.instagrammmm.app` keep the old name because changing them would break installs and links.
+The product is called **Nsoro**. It must not use Instagram's or Meta's name, logo, gradient, icons or artwork anywhere: not in the UI, and not in code comments.
+
+- **Brand:** colours are green `#0a7a4b`, `#2f9e44` and gold `#f2b705`. The logo (deep-green tile, gold star, Ghana's black star) is `public/icons/nsoro-logo.svg` (`NsoroMark`/`NsoroLogo` in `src/assets/constants.jsx`).
+- **Icon and logo images:** `node scripts/generate-icons.mjs` renders all of them with headless Chrome: the PWA/iOS/maskable icons, the favicons, `public/logo.png`, `public/auth.png` and `desktop/build/icon.png`.
+- **UI icons:** Phosphor (`react-icons/pi`), wrapped in `src/assets/constants.jsx`. Use a bell for activity, two bubbles for messages and a film reel for reels. Never copy Instagram's SVGs.
+- **API paths:** the app calls `/api/v1/nsoro/*`. The backend also still serves `/api/v1/instagram/*` for older installs.
+- **Push app key:** `nsoro`. The backend migrates old `instagram` rows to it.
+- **Old names kept on purpose:** the GitHub repo name, the Render URL (`instagrammmm-z34p`) and the Android package id `com.instagrammmm.app` (with `assetlinks.json`). Changing them would break links and installed apps.
 
 ## Commands
 
@@ -81,7 +88,7 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 
 **Installable app / downloads.**
 - The `/download` page detects the device and puts that device's option first.
-- **Android:** a signed Trusted Web Activity APK (`com.instagrammmm.app`) at `public/downloads/Instagram.apk` (still shows the old name until it is rebuilt with PWABuilder, which needs the keystore password from the owner), made with PWABuilder's packaging service. `public/.well-known/assetlinks.json` must match the signing key; the key lives in "Instagram App Packages" on the owner's Desktop and is never committed.
+- **Android:** a signed Trusted Web Activity APK (`com.instagrammmm.app`) at `public/downloads/Nsoro.apk`, made with PWABuilder's packaging service. The app inside still shows the old name and icon until it is rebuilt with the same signing key. `public/.well-known/assetlinks.json` must match the signing key. The key lives in Desktop\Other\"Instagram App Packages" on the owner's PC and is never committed.
 - **Windows:** `Nsoro-Setup.exe` (appId `com.nsoro.app`) is built from `desktop/` (Electron + electron-builder NSIS; `npm run dist`) and published as a GitHub Release asset on abakahjayy/Instagram. The page links to `/releases/latest/download/Nsoro-Setup.exe`. The app window loads the live site and uses a plain Chrome user agent, because Google blocks sign-in from "Electron".
 - **iPhone, iPad and Mac:** installed from the browser as a PWA. The manifest is in `vite.config.js`, the icons come from `scripts/generate-icons.mjs`, and `utils/install.js` catches `beforeinstallprompt` for the "install from this browser" button.
 - Links on the page use the public site address, never `window.location` (it showed localhost during local runs).
@@ -102,18 +109,28 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 - `hooks/useCallSync.js` (mounted by PageLayout) binds the socket events. `components/Call/CallScreen.jsx` is the full-screen UI, also mounted in PageLayout so a call survives navigation.
 - Signaling is FullBackendd `utils/socket.js`: `call:invite` / `incoming` / `accept` / `accepted` / `decline` / `end` / `ended` / `signal`. Calls ring for 35 s.
 - When a call ends, the server saves a `type: 'call'` message (`callKind`, `callStatus`, `duration`) that shows in the chat and inbox.
-- Only public STUN is configured. Callers behind strict NATs need a TURN server via `VITE_TURN_URL`, `VITE_TURN_USERNAME` and `VITE_TURN_CREDENTIAL`.
+- The caller sees "Calling…" until the callee's device confirms, then "Ringing…". The open app confirms with `call:ringing`; with the app closed, the service worker posts the push receipt.
+- Only public STUN is configured.
 
-**Emails.** The email on/off switch is in EditProfile (PATCH `/api/v1/instagram/settings/email`). `/admin/updates` sends an app-update email to everyone; it's only for `user.role === "admin"`, set with the backend's `scripts/makeInstagramAdmin.js`.
+**Ticks (read receipts).**
+- One grey tick means sent. Two grey ticks mean `deliveredAt` is set (the recipient's app was open, or a push reached their phone). Blue ticks mean `read`, and "Seen" appears under the newest read message.
+- The server emits `messagesDelivered` and `messagesRead` `{ by, at }`. `useChat` keeps them as "up to this time" values in `receipts`, so a receipt that arrives before the send ack still counts.
+- Push receipts: FullBackendd `utils/pushAck.js` signs a short-lived token into each message/call push. `public/push-sw.js` posts it to `POST /api/v1/push/ack`, which needs no login.
 
-**Look and layout (matches instagram.com, 2026).**
+**Video playback.**
+- Always start videos with `playVideo()` from `utils/media.js`. Phones refuse to start a video with sound without a fresh tap; `playVideo()` then plays it muted and returns `"muted"` so the UI shows "Unmute".
+- A bare `video.play().catch(() => {})` left reels frozen on Android once sound was on. Callers behind strict NATs need a TURN server via `VITE_TURN_URL`, `VITE_TURN_USERNAME` and `VITE_TURN_CREDENTIAL`.
+
+**Emails.** The email on/off switch is in EditProfile (PATCH `/api/v1/nsoro/settings/email`). `/admin/updates` sends an app-update email to everyone; it's only for `user.role === "admin"`, set with the backend's `scripts/makeInstagramAdmin.js`.
+
+**Look and layout.**
 - **Colours:** theme tokens in `main.jsx`: `ig.bg` #0c1014, `ig.surface`, `ig.border`, `ig.secondary`, `ig.link`. Use them instead of "black" for app chrome; media areas (photos, reels, stories) stay black.
 - **Sidebar order:** Home, Reels, Messages (unread badge from `store/useInboxStore`, kept fresh by `useInboxSync`), Search, Notifications, Create, Profile, then the ☰ More menu (`SideBar/MoreMenu.jsx`: Saved, Get the app, Send an update for admins, About, Switch accounts, Log out).
 - **Floating Messages pill:** `NavBar/MessagesPill`, shown on tablets and up.
 - **Right column:** `SuggestedUsers` shows your account with Switch, suggestions with "Followed by …", and the footer links.
 - **Messages:** `pages/Messages/Messages.jsx` handles both `/messages` and `/messages/:id`. It is two-pane (inbox plus chat) on tablets and up and one screen at a time on phones, and has a New message search modal.
 - **Unread updates:** `useChat` dispatches a window `inbox:refresh` event after marking a conversation read.
-- **Security:** API calls send the login token through an axios interceptor (`utils/api.js`). Social actions use the backend's logged-in `/api/v1/instagram/*` routes.
+- **Security:** API calls send the login token through an axios interceptor (`utils/api.js`). Social actions use the backend's logged-in `/api/v1/nsoro/*` routes.
 - **Security headers** (CSP, X-Frame-Options, etc.) are set in Render → instagrammmm → Headers. The CSP only allows `fullbackendd.onrender.com` for API, socket and media calls, so a new backend or media host must be added there.
 
  `main.jsx` sets up the Chakra theme (dark mode by default, black body background) and registers `/sw.js`. `vite.config.js` also configures `vite-plugin-pwa`, whose manifest still carries leftover "Amazon React" naming.
@@ -126,6 +143,6 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 
 ## Device notifications (Web Push)
 
-`public/push-sw.js` is loaded into the generated service worker (`workbox.importScripts` in vite.config.js). `src/utils/push.js` subscribes this device with app `instagram` through FullBackendd `/api/v1/push`. The switch is `components/Profile/PushNotificationsToggle.jsx`, under Email notifications in Edit profile. `App.jsx` calls `syncPushSubscription()` after the dashboard refresh.
+`public/push-sw.js` is loaded into the generated service worker (`workbox.importScripts` in vite.config.js). `src/utils/push.js` subscribes this device with app `nsoro` through FullBackendd `/api/v1/push`. The switch is `components/Profile/PushNotificationsToggle.jsx`, under Email notifications in Edit profile. `App.jsx` calls `syncPushSubscription()` after the dashboard refresh.
 
 The backend pushes every like, comment, follow and DM, plus welcome and sign-in emails. The service worker hides a notification while the app is focused. On iPhone and iPad it only works once the app is on the Home Screen.

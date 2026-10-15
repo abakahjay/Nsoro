@@ -35,7 +35,7 @@ import API from "../../utils/api";
 import { MessagesLogo } from "../../assets/constants";
 import ChatPage from "./Chat";
 
-// /messages and /messages/:id, laid out like instagram.com/direct:
+// /messages and /messages/:id:
 // tablets and up show the inbox and the open chat side by side; phones show one
 // screen at a time (inbox, or a full-screen chat).
 export default function MessagesPage() {
@@ -132,7 +132,7 @@ const previewText = (m, myId) => {
 	if (m.type === "voice") return "🎤 Voice message";
 	if (m.type !== "call") return m.message;
 	const kind = m.callKind === "video" ? "video call" : "voice call";
-	return m.callStatus !== "completed" && m.sender !== myId ? `Missed ${kind}` : kind[0].toUpperCase() + kind.slice(1);
+	return m.callStatus === "missed" && m.sender !== myId ? `Missed ${kind}` : kind[0].toUpperCase() + kind.slice(1);
 };
 
 // Right pane before a chat is picked (tablets and up).
@@ -155,7 +155,7 @@ function EmptyChat() {
 	);
 }
 
-// Instagram's "New message": search anyone, open the chat.
+// "New message": search anyone, open the chat.
 function NewMessageModal({ isOpen, onClose }) {
 	const [query, setQuery] = useState("");
 	const [results, setResults] = useState([]);

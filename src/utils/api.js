@@ -7,7 +7,7 @@ const API = axios.create({
 });
 
 // Every request carries the login token, so the backend acts as the signed-in user
-// (the /api/v1/instagram routes ignore any user id sent in the body). Reads
+// (the /api/v1/nsoro routes ignore any user id sent in the body). Reads
 // localStorage directly rather than importing utils/auth, which imports this file.
 API.interceptors.request.use((config) => {
     let token = null;

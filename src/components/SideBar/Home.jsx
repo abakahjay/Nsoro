@@ -1,5 +1,5 @@
 import { Box, Link, Tooltip } from "@chakra-ui/react";
-import { AiFillHome } from "react-icons/ai";
+import { PiHouseFill } from "react-icons/pi";
 import { Link as RouterLink } from "react-router-dom";
 
 const Home = () => {
@@ -24,7 +24,7 @@ const Home = () => {
 				w={{ base: 10, xl: "full" }}
 				justifyContent={{ base: "center", xl: "flex-start" }}
 			>
-				<AiFillHome size={25} />
+				<PiHouseFill size={25} />
 				<Box display={{ base: "none", xl: "block" }}>Home</Box>
 			</Link>
 		</Tooltip>

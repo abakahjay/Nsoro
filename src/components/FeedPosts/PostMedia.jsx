@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Box, Image } from "@chakra-ui/react";
 import { BsPlayFill } from "react-icons/bs";
-import { imageUrl, isVideoPost, mediaUrl } from "../../utils/media";
+import { imageUrl, isVideoPost, mediaUrl, playVideo } from "../../utils/media";
 
 // Renders a post's image or video.
 //   variant="feed"  - full width; videos autoplay muted while on screen
@@ -56,13 +56,14 @@ export default function PostMedia({ post, variant = "feed" }) {
 function PostVideo({ src, autoPlayInView }) {
 	const ref = useRef(null);
 
-	// Instagram-style: play (muted) when mostly visible, pause when scrolled away.
+	// Play (muted) when mostly visible, pause when scrolled away.
 	useEffect(() => {
 		const video = ref.current;
 		if (!autoPlayInView || !video || !("IntersectionObserver" in window)) return;
 		const observer = new IntersectionObserver(
 			([entry]) => {
-				if (entry.isIntersecting) video.play().catch(() => {});
+				// if you unmuted it, coming back to it must not leave it frozen (see playVideo)
+				if (entry.isIntersecting) playVideo(video);
 				else video.pause();
 			},
 			{ threshold: 0.6 }

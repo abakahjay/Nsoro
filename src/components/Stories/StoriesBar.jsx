@@ -20,7 +20,7 @@ function StoryAvatar({ user, seen, hasStories, size = "62px", children }) {
 	);
 }
 
-// Horizontal tray at the top of the home feed, like Instagram's.
+// Horizontal tray of stories at the top of the home feed.
 export default function StoriesBar() {
 	const authUser = useAuthStore((state) => state.user);
 	const me = authUser?.user || authUser;

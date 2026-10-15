@@ -1,5 +1,5 @@
-// Dates in a chat, the way Instagram shows them: messages are grouped by day under
-// a "Today" / "Yesterday" / "Monday" / "12 October" (+ year if not this year) header.
+// Dates in a chat: messages are grouped by day under a "Today" / "Yesterday" /
+// "Monday, 13 October 2026" / "7 October 2026" header (always with the year).
 
 const DAY_MS = 86400000;
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -12,9 +12,8 @@ export const dayLabel = (value) => {
 	const days = daysAgo(date);
 	if (days === 0) return "Today";
 	if (days === 1) return "Yesterday";
-	if (days > 1 && days < 7) return date.toLocaleDateString([], { weekday: "long" });
-	const sameYear = date.getFullYear() === new Date().getFullYear();
-	return date.toLocaleDateString([], { day: "numeric", month: "long", ...(sameYear ? {} : { year: "numeric" }) });
+	if (days > 1 && days < 7) return date.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+	return date.toLocaleDateString([], { day: "numeric", month: "long", year: "numeric" });
 };
 
 export const timeLabel = (value) => new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });

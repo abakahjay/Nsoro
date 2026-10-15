@@ -53,7 +53,7 @@ export function SideBar({ authUser, onLogout}){
                         <SidebarItems authUser={authUser} onLogout={onLogout} />
                     </Flex>
 
-                    {/* ☰ More (Saved, Get the app, Log out...), pinned to the bottom like Instagram */}
+                    {/* ☰ More (Saved, Get the app, Log out...), pinned to the bottom */}
                     <Flex direction='column' mt='auto' pt='var(--nav-gap)' alignItems={{ base: "center", xl: "stretch" }}>
                         <MoreMenu authUser={authUser} onLogout={onLogout} />
                     </Flex>

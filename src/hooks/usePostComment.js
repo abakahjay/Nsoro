@@ -28,7 +28,7 @@ const usePostComment = () => {
 
 		try {
 			// logged-in route: the commenter comes from the token
-			const response =await API.post(`/api/v1/instagram/posts/${postId}/comments`,{ text: comment })
+			const response =await API.post(`/api/v1/nsoro/posts/${postId}/comments`,{ text: comment })
             const comments = response.data
             // console.log(comments?.newComment?._id)
 			addComment(postId, comments?.newComment);

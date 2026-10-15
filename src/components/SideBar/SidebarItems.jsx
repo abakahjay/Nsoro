@@ -6,7 +6,7 @@ import Search from "./Search";
 import Messages from './MessagesLink'
 import ReelsLink from './ReelsLink'
 
-// Same order as instagram.com's left rail (2026).
+// Left rail order: Home, Reels, Messages, Search, Notifications, Create, Profile.
 const SidebarItems = ({authUser,onLogout}) => {
 	return (
 		<>

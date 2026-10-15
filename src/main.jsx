@@ -21,7 +21,7 @@ if ('serviceWorker' in navigator) {
 }
 
 
-// Instagram's current dark theme (instagram.com, 2026): near-black blue-grey page,
+// Nsoro dark theme: near-black blue-grey page,
 // #f5f5f5 text, system font at 14px, lighter surfaces for menus/dialogs.
 const colors = {
   ig: {
@@ -50,7 +50,7 @@ const styles = {
   }),
 };
 
-// Dialogs and menus sit on the lighter surface, like Instagram's.
+// Dialogs and menus sit on the lighter surface.
 const components = {
   Modal: { baseStyle: { dialog: { bg: "ig.surface" } } },
   Menu: { baseStyle: { list: { bg: "ig.surface", borderColor: "ig.border" }, item: { bg: "ig.surface", _hover: { bg: "ig.hover" } } } },

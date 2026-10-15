@@ -2,7 +2,7 @@ import { Avatar, Box, Button, Flex, Link, Text } from "@chakra-ui/react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { avatarUrl } from "../../utils/media";
 
-// Your account at the top of the right column, with Instagram's "Switch".
+// Your account at the top of the right column, with "Switch".
 export default function SuggestedHeader({ user, onLogout }) {
 	const navigate = useNavigate();
 	const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");

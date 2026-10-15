@@ -20,5 +20,5 @@ const deviceId = () => {
 
 // Fire-and-forget: never slows down or breaks signing in.
 export const reportAuthEvent = (type) => {
-	API.post("/api/v1/instagram/events", { type, deviceId: deviceId() }).catch(() => {});
+	API.post("/api/v1/nsoro/events", { type, deviceId: deviceId() }).catch(() => {});
 };

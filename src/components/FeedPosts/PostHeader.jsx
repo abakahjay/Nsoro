@@ -40,7 +40,7 @@ const PostHeader = ({ post, creatorProfile,profileImageUrl,imageLoading }) => {
                         <Box color={"gray.500"}>• {timeAgo(post.created)}</Box>
                     </Flex>
                 </Flex>
-                {/* Instagram only offers "Follow" on posts from people you do not follow yet */}
+                {/* "Follow" only shows on posts from people you do not follow yet */}
                 {UseAuth &&creatorProfile && creatorProfile.username&&visitingAnotherProfileAndAuth&&!isFollowing&&(<Box cursor={"pointer"}>
                     <Button
                         size={"xs"}

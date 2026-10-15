@@ -21,6 +21,9 @@ const useChat = (otherUserId) => {
 	const [messages, setMessages] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isOtherTyping, setIsOtherTyping] = useState(false);
+	// Ticks: everything I sent up to these server times reached their device / was
+	// read. Kept as times (not per message) so a receipt that beats the send ack still counts.
+	const [receipts, setReceipts] = useState({ deliveredAt: 0, readAt: 0 });
 	const typingTimer = useRef(null);
 	const lastTypingSent = useRef(0);
 
@@ -42,6 +45,7 @@ const useChat = (otherUserId) => {
 		const controller = new AbortController();
 		setIsLoading(true);
 		setMessages([]);
+		setReceipts({ deliveredAt: 0, readAt: 0 });
 		API.get(`/api/v1/messages/${myId}/${otherUserId}`, { signal: controller.signal, headers: auth() })
 			.then(({ data }) => {
 				setMessages(data);
@@ -80,12 +84,26 @@ const useChat = (otherUserId) => {
 			typingTimer.current = setTimeout(() => setIsOtherTyping(false), 2500);
 		};
 
+		const onDelivered = ({ by, at }) => {
+			if (by !== otherUserId) return;
+			setReceipts((r) => ({ ...r, deliveredAt: Math.max(r.deliveredAt, Date.parse(at)) }));
+		};
+		const onRead = ({ by, at }) => {
+			if (by !== otherUserId) return;
+			const t = Date.parse(at);
+			setReceipts({ deliveredAt: t, readAt: t });
+		};
+
 		socket.on("receiveMessage", onMessage);
+		socket.on("messagesDelivered", onDelivered);
+		socket.on("messagesRead", onRead);
 		socket.on("messageUpdated", onUpdated);
 		socket.on("messageDeleted", onDeleted);
 		socket.on("typing", onTyping);
 		return () => {
 			socket.off("receiveMessage", onMessage);
+			socket.off("messagesDelivered", onDelivered);
+			socket.off("messagesRead", onRead);
 			socket.off("messageUpdated", onUpdated);
 			socket.off("messageDeleted", onDeleted);
 			socket.off("typing", onTyping);
@@ -190,7 +208,19 @@ const useChat = (otherUserId) => {
 		getSocket(token)?.emit("typing", { recipient: otherUserId });
 	}, [token, otherUserId]);
 
-	return { myId, messages, isLoading, isOtherTyping, sendMessage, editMessage, unsendMessage, sendVoice, notifyTyping };
+	// 'pending' (clock) | 'sent' (one grey tick) | 'delivered' (two grey) | 'read' (two blue)
+	const tickState = useCallback(
+		(m) => {
+			if (m.pending) return "pending";
+			const t = Date.parse(m.timestamp);
+			if (m.read || t <= receipts.readAt) return "read";
+			if (m.deliveredAt || t <= receipts.deliveredAt) return "delivered";
+			return "sent";
+		},
+		[receipts]
+	);
+
+	return { myId, messages, isLoading, tickState, isOtherTyping, sendMessage, editMessage, unsendMessage, sendVoice, notifyTyping };
 };
 
 export default useChat;

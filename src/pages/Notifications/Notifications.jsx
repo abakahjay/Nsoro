@@ -12,7 +12,7 @@ const describe = (n) => {
 	return `commented: ${n.text}`;
 };
 
-// Groups like Instagram: Today / This week / Earlier.
+// Grouped: Today / This week / Earlier.
 const groupOf = (date) => {
 	const age = Date.now() - new Date(date).getTime();
 	if (age < 864e5) return "Today";
@@ -24,7 +24,7 @@ export default function NotificationsPage() {
 	const { notifications, loaded } = useNotificationStore();
 	const markRead = useMarkNotificationsRead();
 
-	// Opening the page counts as seeing everything, like Instagram's activity tab.
+	// Opening the page counts as seeing everything.
 	useEffect(() => {
 		if (loaded) markRead();
 	}, [loaded, markRead]);

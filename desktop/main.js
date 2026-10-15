@@ -11,7 +11,7 @@ const IN_APP_HOSTS = new Set([new URL(SITE).host, "fullbackendd.onrender.com", "
 
 // Google blocks sign-in from browsers that announce "Electron", so present the
 // plain Chrome user agent this Electron build is based on.
-app.userAgentFallback = app.userAgentFallback.replace(/\s(Electron|Nsoro|nsoro-desktop|Instagram|instagram-desktop)\/\S+/gi, "");
+app.userAgentFallback = app.userAgentFallback.replace(/\s(Electron|Nsoro|nsoro-desktop)\/\S+/gi, "");
 
 // One window only: opening the app again focuses it.
 if (!app.requestSingleInstanceLock()) app.quit();

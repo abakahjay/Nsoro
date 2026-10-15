@@ -4,7 +4,7 @@ import { avatarUrl } from "../../utils/media";
 import useFollowUser from "../../hooks/useFollowUser";
 import useAuthStore from "../../store/useAuthStore";
 
-// One row of "Suggested for you", styled like instagram.com's right column.
+// One row of "Suggested for you" in the right column.
 export default function SuggestedUser({ user }) {
 	const { isFollowing, isUpdating, handleFollowUser } = useFollowUser(user?._id);
 	const authUser = useAuthStore((state) => state.user);

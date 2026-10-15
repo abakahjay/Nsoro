@@ -1,12 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Avatar, Box, Flex, Link, Spinner, Text, VStack, useDisclosure } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { BsVolumeMuteFill, BsVolumeUpFill } from "react-icons/bs";
-import { FiSend } from "react-icons/fi";
-import { CommentLogo } from "../../assets/constants";
+import { PiShareFatBold } from "react-icons/pi";
+import { CommentLogo, LikeLogo, UnlikeLogo } from "../../assets/constants";
 import API from "../../utils/api";
-import { avatarUrl, mediaUrl } from "../../utils/media";
+import { avatarUrl, mediaUrl, playVideo } from "../../utils/media";
 import { sharePost } from "../../utils/share";
 import useLikePost from "../../hooks/useLikePost";
 import useShowToast from "../../hooks/useShowToast";
@@ -21,6 +20,7 @@ const REEL_H = { base: `calc(100dvh - ${MOBILE_BOTTOM_BAR_H})`, md: "100dvh" };
 export default function ReelsPage() {
 	const [reels, setReels] = useState(null);
 	const [muted, setMuted] = useState(true);
+	const forceMute = useCallback(() => setMuted(true), []);
 
 	useEffect(() => {
 		const controller = new AbortController();
@@ -53,13 +53,13 @@ export default function ReelsPage() {
 			sx={{ scrollSnapType: "y mandatory", scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } }}
 		>
 			{reels.map((post) => (
-				<Reel key={post._id} post={post} muted={muted} onToggleMute={() => setMuted((m) => !m)} />
+				<Reel key={post._id} post={post} muted={muted} onToggleMute={() => setMuted((m) => !m)} onForcedMute={forceMute} />
 			))}
 		</Box>
 	);
 }
 
-function Reel({ post, muted, onToggleMute }) {
+function Reel({ post, muted, onToggleMute, onForcedMute }) {
 	const videoRef = useRef(null);
 	const [paused, setPaused] = useState(false);
 	const { userProfile } = useGetUserById(post.createdBy);
@@ -75,19 +75,25 @@ function Reel({ post, muted, onToggleMute }) {
 			([entry]) => {
 				if (entry.isIntersecting) {
 					video.currentTime = 0;
-					video.play().then(() => setPaused(false)).catch(() => {});
+					// With sound on, phones block the next reel from starting by itself:
+					// playVideo then plays it muted, and the mute button shows that.
+					playVideo(video).then((result) => {
+						if (result === "failed") return setPaused(true);
+						setPaused(false);
+						if (result === "muted") onForcedMute();
+					});
 				} else video.pause();
 			},
 			{ threshold: 0.7 }
 		);
 		observer.observe(video);
 		return () => observer.disconnect();
-	}, []);
+	}, [onForcedMute]);
 
 	const togglePlay = () => {
 		const v = videoRef.current;
 		if (!v) return;
-		if (v.paused) v.play().then(() => setPaused(false)).catch(() => {});
+		if (v.paused) v.play().then(() => setPaused(false)).catch(() => {}); // a tap, so sound is allowed
 		else {
 			v.pause();
 			setPaused(true);
@@ -121,13 +127,13 @@ function Reel({ post, muted, onToggleMute }) {
 				{/* right-hand actions */}
 				<VStack position='absolute' right={3} bottom={{ base: 20, md: 24 }} spacing={5} color='white' filter='drop-shadow(0 1px 2px rgba(0,0,0,0.6))'>
 					<ActionButton label={isLiked ? "Unlike" : "Like"} onClick={handleLikePost} count={likes}>
-						{isLiked ? <AiFillHeart color='#ff3040' /> : <AiOutlineHeart />}
+						{isLiked ? <UnlikeLogo size="1em" /> : <LikeLogo size="1em" />}
 					</ActionButton>
 					<ActionButton label='Comments' onClick={onOpen} count={post.comments?.length || 0}>
-						<CommentLogo />
+						<CommentLogo size="1em" />
 					</ActionButton>
 					<ActionButton label='Share' onClick={share}>
-						<FiSend />
+						<PiShareFatBold />
 					</ActionButton>
 					<ActionButton label={muted ? "Unmute" : "Mute"} onClick={onToggleMute}>
 						{muted ? <BsVolumeMuteFill /> : <BsVolumeUpFill />}

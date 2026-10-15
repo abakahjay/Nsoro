@@ -12,7 +12,7 @@ const FOOTER_LINKS = [
 	{ label: "Messages", to: "/messages" },
 ];
 
-// instagram.com's right column: your account, "Suggested for you", footer links.
+// Right column: your account, "Suggested for you", footer links.
 export default function SuggestedUsers({ authUser, onLogout }) {
 	const user = authUser.user ? authUser.user : authUser;
 	const { isLoading, suggestedUsers } = useGetSuggestedUsers(user);

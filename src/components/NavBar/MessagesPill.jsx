@@ -5,7 +5,7 @@ import { UnreadBadge } from "../SideBar/Notifications";
 import useInboxStore from "../../store/useInboxStore";
 import { avatarUrl } from "../../utils/media";
 
-// instagram.com's floating "Messages" pill (bottom right, tablets and up):
+// Floating "Messages" pill (bottom right, tablets and up):
 // unread count + the people from your latest conversations.
 export default function MessagesPill() {
 	const { unread, recent } = useInboxStore();

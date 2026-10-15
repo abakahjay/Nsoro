@@ -1,11 +1,11 @@
 import { Box, Flex, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Tooltip } from "@chakra-ui/react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
-import { BsBookmark } from "react-icons/bs";
+import { PiBookmarkSimpleBold } from "react-icons/pi";
 import { FiDownload, FiSend, FiUser } from "react-icons/fi";
 import { isInstalled } from "../../utils/install";
 
-// Instagram's ☰ "More" menu at the bottom of the left rail.
+// The ☰ "More" menu at the bottom of the left rail.
 export default function MoreMenu({ authUser, onLogout }) {
 	const user = authUser?.user || authUser;
 	const navigate = useNavigate();
@@ -32,7 +32,7 @@ export default function MoreMenu({ authUser, onLogout }) {
 				</MenuButton>
 			</Tooltip>
 			<MenuList minW='250px' py={2} borderRadius='xl' boxShadow='dark-lg'>
-				<MenuItem icon={<BsBookmark size={18} />} as={RouterLink} to={`/${user?.username}?tab=saved`}>
+				<MenuItem icon={<PiBookmarkSimpleBold size={18} />} as={RouterLink} to={`/${user?.username}?tab=saved`}>
 					Saved
 				</MenuItem>
 				{!isInstalled() && (

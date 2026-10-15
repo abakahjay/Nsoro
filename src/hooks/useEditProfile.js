@@ -5,7 +5,7 @@ import useProfileStore from "../store/userProfileStore";
 import API from "../utils/api";
 
 // Saves Edit profile through the logged-in routes: the backend updates the account
-// in the login token (PATCH /instagram/me, /instagram/me/photo), never one named in the URL.
+// in the login token (PATCH /nsoro/me, /nsoro/me/photo), never one named in the URL.
 const useEditProfile = () => {
 	const [isUpdating, setIsUpdating] = useState(false);
 	const authUser = useAuthStore((state) => state.user);
@@ -24,7 +24,7 @@ const useEditProfile = () => {
 			if (file) {
 				const photo = new FormData();
 				photo.append("photo", file);
-				user = (await API.patch("/api/v1/instagram/me/photo", photo)).data.user;
+				user = (await API.patch("/api/v1/nsoro/me/photo", photo)).data.user;
 			}
 
 			const changes = {};
@@ -32,7 +32,7 @@ const useEditProfile = () => {
 				const value = inputs[key]?.trim();
 				if (value && value !== current[key]) changes[key] = value;
 			}
-			if (Object.keys(changes).length) user = (await API.patch("/api/v1/instagram/me", changes)).data.user;
+			if (Object.keys(changes).length) user = (await API.patch("/api/v1/nsoro/me", changes)).data.user;
 
 			setAuthUser({ ...current, ...user });
 			try {

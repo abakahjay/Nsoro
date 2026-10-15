@@ -11,7 +11,7 @@ const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(
 // Full-screen voice/video call, on top of whatever page you're on (mounted in
 // PageLayout). State lives in useCallStore; utils/call.js does the WebRTC.
 export default function CallScreen() {
-	const { status, kind, peer, localStream, remoteStream, muted, cameraOff, startedAt, endReason } = useCallStore();
+	const { status, kind, peer, ringing, localStream, remoteStream, muted, cameraOff, startedAt, endReason } = useCallStore();
 	const showToast = useShowToast();
 	const elapsed = useElapsed(status === "active" ? startedAt : null);
 
@@ -21,7 +21,8 @@ export default function CallScreen() {
 	const showRemoteVideo = isVideo && status === "active" && remoteStream;
 	const name = peer?.username || "Unknown";
 	const statusText = {
-		outgoing: "Calling…",
+		// "Ringing…" once their phone has it (online, app open or not); "Calling…" while it's offline
+		outgoing: ringing ? "Ringing…" : "Calling…",
 		incoming: isVideo ? "Incoming video call…" : "Incoming voice call…",
 		connecting: "Connecting…",
 		active: fmt(elapsed),
@@ -59,7 +60,7 @@ export default function CallScreen() {
 				<Text fontSize={showRemoteVideo ? "lg" : "2xl"} fontWeight='semibold' textShadow='0 1px 4px rgba(0,0,0,.6)'>
 					{name}
 				</Text>
-				<Text color='whiteAlpha.800' fontVariantNumeric='tabular-nums' textShadow='0 1px 4px rgba(0,0,0,.6)'>
+				<Text color='whiteAlpha.800' sx={{ fontVariantNumeric: "tabular-nums" }} textShadow='0 1px 4px rgba(0,0,0,.6)'>
 					{statusText}
 				</Text>
 			</Flex>

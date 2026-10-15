@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Avatar, Box, Button, Flex, IconButton, Image, Portal, Spinner, Text, VStack } from "@chakra-ui/react";
 import { CloseIcon, DeleteIcon, ViewIcon } from "@chakra-ui/icons";
 import { BsVolumeMuteFill, BsVolumeUpFill } from "react-icons/bs";
-import { avatarUrl, mediaUrl } from "../../utils/media";
+import { avatarUrl, mediaUrl, playVideo } from "../../utils/media";
 import { timeAgo } from "../../utils/timeAgo";
 import { fetchStoryViewers } from "../../hooks/useStories";
 
@@ -15,7 +15,7 @@ const firstUnseen = (group) => {
 };
 
 // Full-screen story player. Phones: edge to edge. Tablets/desktop: a 9:16 card
-// centred on a dark backdrop, like instagram.com.
+// centred on a dark backdrop.
 export default function StoryViewer({ groups, startGroup, onClose, onSeen, onDelete }) {
 	const [g, setG] = useState(startGroup);
 	const [i, setI] = useState(() => firstUnseen(groups[startGroup]));
@@ -81,7 +81,7 @@ export default function StoryViewer({ groups, startGroup, onClose, onSeen, onDel
 		const v = videoRef.current;
 		if (!v) return;
 		if (isPaused) v.pause();
-		else v.play().catch(() => {});
+		else playVideo(v).then((result) => result === "muted" && setMuted(true));
 	}, [isPaused, story?._id]);
 
 	useEffect(() => {

@@ -1,7 +1,7 @@
 {
   "name": "nsoro-desktop",
   "productName": "Nsoro",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Nsoro for Windows - share your moments",
   "author": "Abakah Joshua",
   "main": "main.js",

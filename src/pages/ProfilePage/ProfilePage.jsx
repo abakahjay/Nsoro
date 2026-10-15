@@ -64,7 +64,7 @@ function SavedPosts({ savedCount }) {
 	return <PostGrid posts={posts} emptyText='Save posts you want to see again - only you can see what you’ve saved.' />;
 }
 
-// The person's video posts, like the Reels tab on an Instagram profile.
+// The person's video posts (the Reels tab on a profile).
 function UserReels({ userId }) {
 	const [posts, setPosts] = useState(null);
 	useEffect(() => {

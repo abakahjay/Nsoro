@@ -50,7 +50,7 @@ export default function SendUpdatePage() {
 		confirm.onClose();
 		setSending(test ? "test" : "all");
 		try {
-			const { data } = await API.post("/api/v1/instagram/updates", { ...form, test }, { headers: { Authorization: `Bearer ${getAuthToken()}` } });
+			const { data } = await API.post("/api/v1/nsoro/updates", { ...form, test }, { headers: { Authorization: `Bearer ${getAuthToken()}` } });
 			showToast(
 				test ? "Test sent" : "Update sent",
 				test ? "Check your inbox." : `Emailed ${data.sent} of ${data.attempted} people${data.truncated ? " - daily cap reached, send again tomorrow for the rest" : ""}.`,

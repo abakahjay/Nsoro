@@ -12,7 +12,7 @@ const wasDismissed = () => {
 	}
 };
 
-// Slim "Get the app" strip at the top of the phone feed, like instagram.com on mobile.
+// Slim "Get the app" strip at the top of the phone feed.
 // Phones only, never inside the installed app, and stays closed once dismissed.
 export default function GetAppBanner() {
 	const [hidden, setHidden] = useState(() => isInstalled() || wasDismissed());

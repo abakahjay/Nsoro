@@ -1,14 +1,13 @@
 import { Box, Button, Flex, Input, InputGroup, InputRightElement, Text, useDisclosure } from "@chakra-ui/react";
 import { useRef, useState } from "react";
-import { CommentLogo, NotificationsLogo, UnlikeLogo } from "../../assets/constants";
+import { CommentLogo, LikeLogo, UnlikeLogo } from "../../assets/constants";
 import usePostComment from "../../hooks/usePostComment";
 import useAuthStore from "../../store/useAuthStore";
 import useLikePost from "../../hooks/useLikePost";
 import { timeAgo } from "../../utils/timeAgo";
 import CommentsModal from "../Modals/CommentsModal";
 import useSavePost from "../../hooks/useSavePost";
-import { BsBookmark, BsBookmarkFill } from "react-icons/bs";
-import { FiSend } from "react-icons/fi";
+import { PiBookmarkSimpleBold, PiBookmarkSimpleFill, PiShareFatBold } from "react-icons/pi";
 import { sharePost } from "../../utils/share";
 import useShowToast from "../../hooks/useShowToast";
 
@@ -37,10 +36,10 @@ const PostFooter = ({ post, isProfilePage, creatorProfile, likeState }) => {
 
 	return (
 		<Box mb={{ base: 6, md: 10 }} marginTop={"auto"}>
-			{/* instagram.com (2026): counts sit right next to the like and comment icons */}
+			{/* counts sit right next to the like and comment icons */}
 			<Flex alignItems={"center"} gap={4} w={"full"} pt={0} mb={2} mt={{ base: 2, md: 3 }}>
 				<Flex as='button' aria-label={isLiked ? "Unlike" : "Like"} onClick={handleLikePost} fontSize={18} alignItems='center' gap={1.5}>
-					{!isLiked ? <NotificationsLogo /> : <UnlikeLogo />}
+					{!isLiked ? <LikeLogo /> : <UnlikeLogo />}
 					{likes > 0 && <Text as='span' fontSize='sm' fontWeight='semibold'>{likes}</Text>}
 				</Flex>
 
@@ -57,7 +56,7 @@ const PostFooter = ({ post, isProfilePage, creatorProfile, likeState }) => {
 				</Flex>
 
 				<Box as='button' aria-label='Share' fontSize={22} onClick={handleShare}>
-					<FiSend />
+					<PiShareFatBold />
 				</Box>
 
 				<Box
@@ -67,7 +66,7 @@ const PostFooter = ({ post, isProfilePage, creatorProfile, likeState }) => {
 					fontSize={22}
 					onClick={toggleSave}
 				>
-					{isSaved ? <BsBookmarkFill /> : <BsBookmark />}
+					{isSaved ? <PiBookmarkSimpleFill /> : <PiBookmarkSimpleBold />}
 				</Box>
 			</Flex>
 			{/* the post modal on a profile keeps the classic "n likes" line */}

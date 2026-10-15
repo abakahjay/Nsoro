@@ -13,8 +13,7 @@ import {
 	VStack,
 	useDisclosure,
 } from "@chakra-ui/react";
-import { AiFillHeart } from "react-icons/ai";
-import { FaComment } from "react-icons/fa";
+import { PiChatCircleFill, PiHeartFill } from "react-icons/pi";
 import { MdDelete } from "react-icons/md";
 import Comment from "../Comment/Comment";
 import Caption from "../Comment/Caption";
@@ -44,7 +43,7 @@ export default function ProfilePost({post}) {
     setIsDeleting(true);
 		try {
 			// logged-in route: only the author can delete
-			const response =await API.delete(`/api/v1/instagram/posts/${post._id}`)
+			const response =await API.delete(`/api/v1/nsoro/posts/${post._id}`)
       let posts = response.data
       console.log(posts)
 			deletePost(posts.user);
@@ -88,14 +87,14 @@ export default function ProfilePost({post}) {
             <Flex alignItems={'center'} justifyContent={'center'} gap={50}>
               {/* likes */}
               <Flex>
-                <AiFillHeart size={20} />
+                <PiHeartFill size={20} />
                 <Text fontWeight={"bold"} ml={2}>
                   {post?.likes.length}
                 </Text>
               </Flex>
               {/* Comments */}
               <Flex>
-                <FaComment size={20} />
+                <PiChatCircleFill size={20} />
                 <Text fontWeight={"bold"} ml={2}>
                   {post?.comments.length}
                 </Text>

@@ -17,7 +17,7 @@ export default function FeedPosts({authUser}) {
             <GetAppBanner />
             <StoriesBar />
 
-            {/* For the Loading Skeleton of Instagram */}
+            {/* Loading skeletons */}
             {isLoading&&[0,1,2,3].map((_,idx)=>(
                 <VStack key={idx} gap={4} alignItems={'flex-start'} mb={10} px={{ base: 3, md: 0 }}>
                     <Flex gap={2} alignItems={'center'}>

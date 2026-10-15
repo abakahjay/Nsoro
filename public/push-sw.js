@@ -1,6 +1,6 @@
 /* Web Push handlers, loaded into the generated service worker with
    workbox importScripts (see vite.config.js). Payload from FullBackendd
-   utils/push.js: { title, body, url, tag, icon, badge, app }. */
+   utils/push.js: { title, body, url, tag, icon, badge, app, ack?, call? }. */
 
 self.addEventListener('push', (event) => {
   let data = {};
@@ -13,6 +13,15 @@ self.addEventListener('push', (event) => {
   event.waitUntil((async () => {
     // Always show it, even while the app is open, so it lands in the phone's
     // notification bar and history (and Chrome requires a notification per push).
+    // Delivery receipt: tells the sender this phone got it, even with the app
+    // closed (two grey ticks; "Ringing…" on the caller's screen). See FullBackendd utils/pushAck.js.
+    const receipt = data.ack?.url
+      ? fetch(data.ack.url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: data.ack.token }),
+        }).catch(() => {})
+      : null;
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     windows.forEach((w) => w.postMessage({ type: 'push', data }));
     await self.registration.showNotification(data.title || 'Nsoro', {
@@ -21,8 +30,12 @@ self.addEventListener('push', (event) => {
       badge: data.badge || '/icons/icon-192.png',
       tag: data.tag,
       renotify: Boolean(data.tag),
+      // an incoming call stays on screen and vibrates like a ring
+      requireInteraction: Boolean(data.call),
+      vibrate: data.call ? [500, 250, 500, 250, 500, 250, 500] : undefined,
       data: { url: data.url || '/' },
     });
+    await receipt;
   })());
 });
 
