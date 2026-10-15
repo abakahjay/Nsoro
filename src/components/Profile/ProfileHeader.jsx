@@ -1,5 +1,7 @@
 import { Avatar, Box, Button, Flex, Text, useDisclosure } from "@chakra-ui/react";
 import EditProfile from "./EditProfile";
+import FollowListModal from "./FollowListModal";
+import { useState } from "react";
 import { avatarUrl } from "../../utils/media";
 import useAuthStore from "../../store/useAuthStore";
 import useFollowUser from "../../hooks/useFollowUser";
@@ -16,6 +18,7 @@ export default function ProfileHeader({authUser,onLogout,username,owner}) {
       const visitingOwnProfileAndAuth = !!UseAuth && user && user.username === owner;
       const visitingAnotherProfileAndAuth = !!UseAuth && user && user.username !== owner;
       const { isOpen, onOpen, onClose } = useDisclosure();
+      const [list, setList] = useState(null); // 'followers' | 'following' while that list is open
       const showToast = useShowToast();
       const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
 
@@ -32,8 +35,8 @@ export default function ProfileHeader({authUser,onLogout,username,owner}) {
 
       const stats = [
         { label: "posts", value: user.posts.length },
-        { label: "followers", value: user.followers.length },
-        { label: "following", value: user.following.length },
+        { label: "followers", value: user.followers.length, list: "followers" },
+        { label: "following", value: user.following.length, list: "following" },
       ];
 
       const buttonProps = { size: "sm", flex: { base: 1, md: "initial" }, borderRadius: "lg", fontWeight: "semibold" };
@@ -120,7 +123,22 @@ export default function ProfileHeader({authUser,onLogout,username,owner}) {
         {/* counts as chips */}
         <Flex gap={2} mt={4} wrap='wrap'>
           {stats.map((s) => (
-            <Flex key={s.label} alignItems='baseline' gap={1.5} bg='nsoro.raised' border='1px solid' borderColor='nsoro.border' borderRadius='xl' px={3} py={1.5}>
+            <Flex
+              key={s.label}
+              as={s.list ? "button" : "div"}
+              onClick={s.list ? () => setList(s.list) : undefined}
+              aria-label={s.list ? `Show ${s.value} ${s.label}` : undefined}
+              alignItems='baseline'
+              gap={1.5}
+              bg='nsoro.raised'
+              border='1px solid'
+              borderColor='nsoro.border'
+              borderRadius='xl'
+              px={3}
+              py={1.5}
+              transition='border-color 0.15s'
+              _hover={s.list ? { borderColor: "brand.400" } : undefined}
+            >
               <Text fontWeight='bold'>{s.value}</Text>
               <Text color='nsoro.secondary' fontSize='sm'>{s.label}</Text>
             </Flex>
@@ -134,6 +152,7 @@ export default function ProfileHeader({authUser,onLogout,username,owner}) {
       </Box>
 
       {isOpen && <EditProfile isOpen={isOpen} onClose={onClose}/>}
+      {list && <FollowListModal username={user.username} list={list} isOpen onClose={() => setList(null)} />}
     </Box>
   )
 }

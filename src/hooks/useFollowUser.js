@@ -11,6 +11,7 @@ const useFollowUser = (userId) => {
 	const { userProfile, setUserProfile } = useProfileStore();
 	const showToast = useShowToast();
     const user=authUser.user?authUser.user:authUser
+    const showingThisProfile = String(userProfile?.user?._id) === String(userId)
     // authUser._id&&console.log(authUser?._id)
     // console.log(userId)
     
@@ -33,11 +34,9 @@ const useFollowUser = (userId) => {
                     ...user,
 					following: user.following.filter((uid) => uid !== userId),
 				});
-				if (userProfile)
-					setUserProfile({
-                        ...userProfile,
-                        user: frs.following//userProfile.followers.filter((uid) => uid !== authUser.uid),
-                    });
+				// only refresh the profile page if it's this person's (not when following from a list)
+				if (showingThisProfile && frs.following)
+					setUserProfile({ ...userProfile, user: frs.following });
                 setIsFollowing(false);
 
             } else {
@@ -48,14 +47,11 @@ const useFollowUser = (userId) => {
                     throw new Error(fr.error)
                 }
                 setAuthUser({
-                    ...authUser,
+                    ...user,
                     following: [...user.following, userId],
                 });
-                if (userProfile)
-                    setUserProfile({
-                        ...userProfile,
-                        user: fr.following//followers: [...userProfile.followers, authUser.uid],
-                    });
+                if (showingThisProfile && fr.following)
+                    setUserProfile({ ...userProfile, user: fr.following });
                 setIsFollowing(true);
 			}
 		} catch (error) {

@@ -173,7 +173,7 @@ function NewMessageModal({ isOpen, onClose }) {
 				.then(({ data }) => setResults(data.users.filter((u) => u._id !== myId)))
 				.catch(() => {})
 				.finally(() => setLoading(false));
-		}, 250);
+		}, 120);
 		return () => {
 			clearTimeout(timer);
 			controller.abort();

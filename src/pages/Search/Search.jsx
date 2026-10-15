@@ -6,7 +6,8 @@ import API from "../../utils/api";
 import { avatarUrl } from "../../utils/media";
 import PostGrid from "../../components/Profile/PostGrid";
 
-// /search - people search as you type; Explore grid of recent posts while the box is empty.
+// /search - people suggestions from the first letter (username, first, last or full name,
+// anywhere in the word); Explore grid of recent posts while the box is empty.
 export default function SearchPage() {
 	const [query, setQuery] = useState("");
 	const [results, setResults] = useState([]);
@@ -29,7 +30,7 @@ export default function SearchPage() {
 			} finally {
 				setIsSearching(false);
 			}
-		}, 250);
+		}, 120);
 		return () => {
 			clearTimeout(timer);
 			controller.abort();
@@ -85,7 +86,7 @@ function UserResults({ users, isSearching }) {
 								{u.username}
 							</Text>
 							<Text color='gray.400' fontSize='sm'>
-								{u.firstName} {u.lastName} · {u.followers?.length || 0} followers
+								{u.firstName} {u.lastName} · {u.followers?.length || 0} {u.followers?.length === 1 ? "follower" : "followers"}
 							</Text>
 						</Box>
 					</Flex>
