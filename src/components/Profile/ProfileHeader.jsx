@@ -1,4 +1,4 @@
-import { Avatar, Box, Button, Flex, Text, VStack, useDisclosure } from "@chakra-ui/react";
+import { Avatar, Box, Button, Flex, Text, useDisclosure } from "@chakra-ui/react";
 import EditProfile from "./EditProfile";
 import { avatarUrl } from "../../utils/media";
 import useAuthStore from "../../store/useAuthStore";
@@ -6,8 +6,8 @@ import useFollowUser from "../../hooks/useFollowUser";
 import useShowToast from "../../hooks/useShowToast";
 import { Link as RouterLink } from "react-router-dom";
 
-// Profile header. Phones: avatar beside the counts, name/bio below,
-// full-width buttons. Tablet/desktop: big avatar on the left, everything else on the right.
+// Profile card: green-gold banner, rounded-square avatar overlapping it, full name
+// then @username, bio, counts as chips. Phones: buttons full width at the bottom.
 export default function ProfileHeader({authUser,onLogout,username,owner}) {
       const user=authUser.user?authUser.user:authUser
       const url = avatarUrl(user);
@@ -41,14 +41,14 @@ export default function ProfileHeader({authUser,onLogout,username,owner}) {
         <Flex gap={2} w={{ base: "full", md: "auto" }}>
           {visitingOwnProfileAndAuth && (
             <>
-              <Button {...buttonProps} bg='whiteAlpha.200' _hover={{ bg: "whiteAlpha.300" }} onClick={onOpen}>
+              <Button {...buttonProps} bg='nsoro.raised' border='1px solid' borderColor='nsoro.border' _hover={{ bg: "nsoro.hover" }} onClick={onOpen}>
                 Edit profile
               </Button>
-              <Button {...buttonProps} bg='whiteAlpha.200' _hover={{ bg: "whiteAlpha.300" }} onClick={shareProfile}>
+              <Button {...buttonProps} bg='nsoro.raised' border='1px solid' borderColor='nsoro.border' _hover={{ bg: "nsoro.hover" }} onClick={shareProfile}>
                 Share profile
               </Button>
               {user.role === "admin" && (
-                <Button {...buttonProps} as={RouterLink} to='/admin/updates' bg='whiteAlpha.200' _hover={{ bg: "whiteAlpha.300" }}>
+                <Button {...buttonProps} as={RouterLink} to='/admin/updates' bg='nsoro.raised' border='1px solid' borderColor='nsoro.border' _hover={{ bg: "nsoro.hover" }}>
                   Send update
                 </Button>
               )}
@@ -62,14 +62,15 @@ export default function ProfileHeader({authUser,onLogout,username,owner}) {
             <>
               <Button
                 {...buttonProps}
-                bg={isFollowing ? "whiteAlpha.200" : "blue.500"}
-                _hover={{ bg: isFollowing ? "whiteAlpha.300" : "blue.600" }}
+                bg={isFollowing ? "nsoro.raised" : "brand.500"}
+                color={isFollowing ? undefined : "white"}
+                _hover={{ bg: isFollowing ? "nsoro.hover" : "brand.600" }}
                 onClick={handleFollowUser}
                 isLoading={isUpdating}
               >
                 {isFollowing ? "Following" : "Follow"}
               </Button>
-              <Button {...buttonProps} as={RouterLink} to={`/messages/${user._id}`} bg='whiteAlpha.200' _hover={{ bg: "whiteAlpha.300" }}>
+              <Button {...buttonProps} as={RouterLink} to={`/messages/${user._id}`} bg='nsoro.raised' border='1px solid' borderColor='nsoro.border' _hover={{ bg: "nsoro.hover" }}>
                 Message
               </Button>
             </>
@@ -78,46 +79,58 @@ export default function ProfileHeader({authUser,onLogout,username,owner}) {
       );
 
   return (
-    <Box w='full'>
-      <Flex gap={{ base: 5, md: 16 }} alignItems={{ base: "center", md: "flex-start" }}>
-        <Avatar
-          src={url}
-          name={user.username}
-          alt={`${user.username}'s profile picture`}
-          referrerPolicy='no-referrer'
-          w={{ base: "80px", md: "150px" }}
-          h={{ base: "80px", md: "150px" }}
-          flexShrink={0}
-        />
+    <Box w='full' bg='nsoro.surface' border='1px solid' borderColor='nsoro.border' borderRadius='2xl' overflow='hidden'>
+      {/* Nsoro banner: emerald into gold, with a faint star */}
+      <Box
+        h={{ base: "84px", md: "120px" }}
+        bgGradient='linear(120deg, brand.800, brand.500 55%, gold.500)'
+        position='relative'
+        _after={{ content: '"★"', position: "absolute", right: { base: 4, md: 8 }, top: { base: 2, md: 3 }, fontSize: { base: "40px", md: "56px" }, color: "whiteAlpha.300", lineHeight: 1 }}
+      />
 
-        <VStack alignItems='flex-start' spacing={{ base: 2, md: 5 }} flex={1} minW={0}>
-          <Flex gap={4} alignItems='center' wrap='wrap'>
-            <Text fontSize={{ base: "lg", md: "xl" }} noOfLines={1}>{username}</Text>
-            <Box display={{ base: "none", md: "block" }}>{buttons}</Box>
-          </Flex>
-
-          {/* counts: under the name on desktop, spread beside the avatar on phones */}
-          <Flex gap={{ base: 0, md: 10 }} w={{ base: "full", md: "auto" }} justifyContent={{ base: "space-between", md: "flex-start" }}>
-            {stats.map((s) => (
-              <Flex key={s.label} direction={{ base: "column", md: "row" }} alignItems='center' gap={{ base: 0, md: 1 }} fontSize={{ base: "sm", md: "md" }}>
-                <Text fontWeight='bold'>{s.value}</Text>
-                <Text color={{ base: "gray.300", md: "inherit" }}>{s.label}</Text>
-              </Flex>
-            ))}
-          </Flex>
-
-          <Box display={{ base: "none", md: "block" }}>
-            {fullName && <Text fontWeight='bold' fontSize='sm'>{fullName}</Text>}
-            <Text fontSize='sm' whiteSpace='pre-wrap'>{user.bio}</Text>
+      <Box px={{ base: 4, md: 8 }} pb={{ base: 4, md: 6 }}>
+        <Flex gap={{ base: 4, md: 6 }} alignItems='flex-end' mt={{ base: "-40px", md: "-60px" }} wrap='wrap'>
+          <Avatar
+            src={url}
+            name={user.username}
+            alt={`${user.username}'s profile picture`}
+            referrerPolicy='no-referrer'
+            w={{ base: "88px", md: "128px" }}
+            h={{ base: "88px", md: "128px" }}
+            boxShadow='0 0 0 4px var(--chakra-colors-nsoro-surface)'
+            flexShrink={0}
+          />
+          <Box flex={1} minW='160px' pb={1}>
+            <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight='bold' lineHeight='short' noOfLines={1}>
+              {fullName || username}
+            </Text>
+            <Text color='nsoro.secondary' fontSize='sm' noOfLines={1}>
+              @{username}
+            </Text>
           </Box>
-        </VStack>
-      </Flex>
+          <Box display={{ base: "none", md: "block" }} pb={1}>{buttons}</Box>
+        </Flex>
 
-      {/* phones: name, bio and buttons below the avatar row */}
-      <Box display={{ base: "block", md: "none" }} mt={3}>
-        {fullName && <Text fontWeight='bold' fontSize='sm'>{fullName}</Text>}
-        <Text fontSize='sm' whiteSpace='pre-wrap' mb={3}>{user.bio}</Text>
-        {buttons}
+        {user.bio && (
+          <Text fontSize='sm' whiteSpace='pre-wrap' mt={4} maxW='60ch'>
+            {user.bio}
+          </Text>
+        )}
+
+        {/* counts as chips */}
+        <Flex gap={2} mt={4} wrap='wrap'>
+          {stats.map((s) => (
+            <Flex key={s.label} alignItems='baseline' gap={1.5} bg='nsoro.raised' border='1px solid' borderColor='nsoro.border' borderRadius='xl' px={3} py={1.5}>
+              <Text fontWeight='bold'>{s.value}</Text>
+              <Text color='nsoro.secondary' fontSize='sm'>{s.label}</Text>
+            </Flex>
+          ))}
+        </Flex>
+
+        {/* phones: buttons full width under the counts */}
+        <Box display={{ base: "block", md: "none" }} mt={4}>
+          {buttons}
+        </Box>
       </Box>
 
       {isOpen && <EditProfile isOpen={isOpen} onClose={onClose}/>}

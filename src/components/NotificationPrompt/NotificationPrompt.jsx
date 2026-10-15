@@ -70,7 +70,7 @@ export default function NotificationPrompt() {
 						</Flex>
 						<Text fontWeight='bold' fontSize='lg'>Turn on notifications</Text>
 						<Text color='gray.400' fontSize='sm'>
-							Get sign-in alerts, messages, likes, comments and new followers in your notification bar, even when Nsoro is closed.
+							Get sign-in alerts, messages, stars, comments and new followers in your notification bar, even when Nsoro is closed.
 						</Text>
 						<Button colorScheme='green' w='full' onClick={allow} isLoading={busy}>Allow</Button>
 						<Button variant='ghost' w='full' size='sm' onClick={later} isDisabled={busy}>Not now</Button>

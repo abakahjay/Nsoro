@@ -1,4 +1,4 @@
-import { Box, Flex, Link, Skeleton, SkeletonCircle, Text, VStack } from "@chakra-ui/react";
+import { Box, Flex, Link, Skeleton, Text, VStack } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import SuggestedUser from "./SuggestedUser";
 import SuggestedHeader from "./SuggestedHeader";
@@ -8,25 +8,24 @@ const FOOTER_LINKS = [
 	{ label: "About", href: "https://portfolio-8jmo.onrender.com/" },
 	{ label: "Get the app", to: "/download" },
 	{ label: "Search", to: "/search" },
-	{ label: "Reels", to: "/reels" },
 	{ label: "Messages", to: "/messages" },
 ];
 
-// Right column: your account, "Suggested for you", footer links.
+// Right column card: your account, "People to follow", footer links.
 export default function SuggestedUsers({ authUser, onLogout }) {
 	const user = authUser.user ? authUser.user : authUser;
 	const { isLoading, suggestedUsers } = useGetSuggestedUsers(user);
 
 	return (
-		<VStack pt={9} px={4} spacing={4} align='stretch'>
+		<VStack mt={6} p={5} spacing={4} align='stretch' bg='nsoro.surface' border='1px solid' borderColor='nsoro.border' borderRadius='2xl' position='sticky' top={6}>
 			<SuggestedHeader user={user} onLogout={onLogout} />
 
 			{(isLoading || suggestedUsers.length > 0) && (
 				<Flex alignItems='center' justifyContent='space-between' mt={2}>
-					<Text fontSize='sm' fontWeight='semibold' color='ig.secondary'>
-						Suggested for you
+					<Text fontSize='sm' fontWeight='semibold' color='nsoro.secondary'>
+						People to follow
 					</Text>
-					<Link as={RouterLink} to='/search' fontSize='xs' fontWeight='semibold' _hover={{ color: "ig.secondary" }}>
+					<Link as={RouterLink} to='/search' fontSize='xs' fontWeight='semibold' _hover={{ color: "nsoro.secondary" }}>
 						See all
 					</Link>
 				</Flex>
@@ -35,7 +34,7 @@ export default function SuggestedUsers({ authUser, onLogout }) {
 			{isLoading &&
 				[0, 1, 2, 3].map((i) => (
 					<Flex key={i} gap={3} alignItems='center'>
-						<SkeletonCircle size='11' />
+						<Skeleton w='44px' h='44px' borderRadius='30%' />
 						<Box flex={1}>
 							<Skeleton h='10px' w='60%' mb={2} />
 							<Skeleton h='8px' w='80%' />
@@ -45,7 +44,7 @@ export default function SuggestedUsers({ authUser, onLogout }) {
 
 			{!isLoading && suggestedUsers.map((u) => <SuggestedUser key={u._id} user={u} />)}
 
-			<Box pt={6} fontSize='xs' color='ig.secondary' lineHeight='tall'>
+			<Box pt={6} fontSize='xs' color='nsoro.secondary' lineHeight='tall'>
 				{FOOTER_LINKS.map((l, i) => (
 					<span key={l.label}>
 						{l.to ? (
@@ -62,7 +61,7 @@ export default function SuggestedUsers({ authUser, onLogout }) {
 				))}
 				<Text mt={4} textTransform='uppercase'>
 					© {new Date().getFullYear()} Nsoro by{" "}
-					<Link href='https://portfolio-8jmo.onrender.com/' isExternal color='ig.text'>
+					<Link href='https://portfolio-8jmo.onrender.com/' isExternal color='nsoro.text'>
 						Abakah Joshua
 					</Link>
 				</Text>

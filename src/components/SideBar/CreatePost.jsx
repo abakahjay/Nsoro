@@ -59,7 +59,7 @@ const CreatePost = () => {
 				<Flex
 					alignItems={"center"}
 					gap={4}
-					_hover={{ bg: "whiteAlpha.400" }}
+					_hover={{ bg: "nsoro.hover" }}
 					borderRadius={6}
 					p={2}
 					w={{ base: 10, xl: "full" }}
@@ -74,7 +74,7 @@ const CreatePost = () => {
 			<Modal isOpen={isOpen} onClose={onClose} size={{ base: "full", md: "xl" }} scrollBehavior='inside'>
 				<ModalOverlay />
 
-				<ModalContent bg={"ig.surface"} border={"1px solid"} borderColor='ig.border'>
+				<ModalContent bg={"nsoro.surface"} border={"1px solid"} borderColor='nsoro.border'>
 					<ModalHeader>Create Post</ModalHeader>
 					<ModalCloseButton />
 					<ModalBody pb={6}>

@@ -46,7 +46,7 @@ export default function MessagesPage() {
 				w={{ base: "full", md: "340px", lg: "400px" }}
 				flexShrink={0}
 				borderRight={{ md: "1px solid" }}
-				borderColor={{ md: "ig.border" }}
+				borderColor={{ md: "nsoro.border" }}
 				display={{ base: id ? "none" : "block", md: "block" }}
 				overflowY='auto'
 			>
@@ -90,7 +90,7 @@ function Inbox({ activeId }) {
 				))}
 
 			{!isLoading && conversations.length === 0 && (
-				<Text color='ig.secondary' fontSize='sm'>
+				<Text color='nsoro.secondary' fontSize='sm'>
 					No messages yet. Tap the pencil to start a chat.
 				</Text>
 			)}
@@ -101,8 +101,8 @@ function Inbox({ activeId }) {
 						as={RouterLink}
 						to={`/messages/${user._id}`}
 						key={user._id}
-						_hover={{ textDecoration: "none", bg: "ig.hover" }}
-						bg={activeId === user._id ? "ig.hover" : "transparent"}
+						_hover={{ textDecoration: "none", bg: "nsoro.hover" }}
+						bg={activeId === user._id ? "nsoro.hover" : "transparent"}
 						px={{ base: 4, md: 5 }}
 						py={2}
 					>
@@ -112,12 +112,12 @@ function Inbox({ activeId }) {
 								<Text fontWeight={unread ? "bold" : "normal"} fontSize='sm' noOfLines={1}>
 									{[user.firstName, user.lastName].filter(Boolean).join(" ") || user.username}
 								</Text>
-								<Text color={unread ? "ig.text" : "ig.secondary"} fontWeight={unread ? "semibold" : "normal"} fontSize='xs' noOfLines={1}>
+								<Text color={unread ? "nsoro.text" : "nsoro.secondary"} fontWeight={unread ? "semibold" : "normal"} fontSize='xs' noOfLines={1}>
 									{lastMessage.sender === myId ? "You: " : ""}
 									{previewText(lastMessage, myId)} · {timeAgo(new Date(lastMessage.timestamp).getTime())}
 								</Text>
 							</Box>
-							{unread > 0 && <Box w='8px' h='8px' borderRadius='full' bg='ig.link' flexShrink={0} aria-label={`${unread} unread`} />}
+							{unread > 0 && <Box w='8px' h='8px' borderRadius='full' bg='nsoro.link' flexShrink={0} aria-label={`${unread} unread`} />}
 						</Flex>
 					</Link>
 				))}
@@ -140,14 +140,14 @@ function EmptyChat() {
 	const newMessage = useDisclosure();
 	return (
 		<Flex h='full' direction='column' alignItems='center' justifyContent='center' gap={3} textAlign='center' px={6}>
-			<Flex w='96px' h='96px' borderRadius='full' border='2px solid' borderColor='ig.text' alignItems='center' justifyContent='center' sx={{ svg: { width: "48px", height: "48px" } }}>
+			<Flex w='96px' h='96px' borderRadius='full' border='2px solid' borderColor='nsoro.text' alignItems='center' justifyContent='center' sx={{ svg: { width: "48px", height: "48px" } }}>
 				<MessagesLogo />
 			</Flex>
 			<Text fontSize='xl'>Your messages</Text>
-			<Text color='ig.secondary' fontSize='sm'>
+			<Text color='nsoro.secondary' fontSize='sm'>
 				Send a message or a voice note to a friend.
 			</Text>
-			<Button colorScheme='blue' size='sm' borderRadius='lg' onClick={newMessage.onOpen}>
+			<Button colorScheme='brand' size='sm' borderRadius='lg' onClick={newMessage.onOpen}>
 				Send message
 			</Button>
 			<NewMessageModal isOpen={newMessage.isOpen} onClose={newMessage.onClose} />
@@ -190,14 +190,14 @@ function NewMessageModal({ isOpen, onClose }) {
 		<Modal isOpen={isOpen} onClose={onClose} size={{ base: "full", md: "md" }} scrollBehavior='inside'>
 			<ModalOverlay />
 			<ModalContent borderRadius={{ base: 0, md: "xl" }}>
-				<ModalHeader textAlign='center' fontSize='md' borderBottom='1px solid' borderColor='ig.border'>
+				<ModalHeader textAlign='center' fontSize='md' borderBottom='1px solid' borderColor='nsoro.border'>
 					New message
 				</ModalHeader>
 				<ModalCloseButton />
 				<ModalBody px={0} minH='300px'>
 					<InputGroup px={4} mb={2}>
 						<InputLeftElement pointerEvents='none' pl={6}>
-							<SearchIcon color='ig.secondary' />
+							<SearchIcon color='nsoro.secondary' />
 						</InputLeftElement>
 						<Input placeholder='Search…' value={query} onChange={(e) => setQuery(e.target.value)} variant='filled' autoFocus />
 					</InputGroup>
@@ -207,18 +207,18 @@ function NewMessageModal({ isOpen, onClose }) {
 						</Flex>
 					)}
 					{!loading && query.trim() && results.length === 0 && (
-						<Text px={6} color='ig.secondary' fontSize='sm'>
+						<Text px={6} color='nsoro.secondary' fontSize='sm'>
 							No account found.
 						</Text>
 					)}
 					{results.map((u) => (
-						<Flex as='button' key={u._id} w='full' textAlign='left' alignItems='center' gap={3} px={6} py={2} _hover={{ bg: "ig.hover" }} onClick={() => open(u)}>
+						<Flex as='button' key={u._id} w='full' textAlign='left' alignItems='center' gap={3} px={6} py={2} _hover={{ bg: "nsoro.hover" }} onClick={() => open(u)}>
 							<Avatar size='md' src={avatarUrl(u)} name={u.username} referrerPolicy='no-referrer' />
 							<Box>
 								<Text fontWeight='semibold' fontSize='sm'>
 									{u.username}
 								</Text>
-								<Text color='ig.secondary' fontSize='sm'>
+								<Text color='nsoro.secondary' fontSize='sm'>
 									{u.firstName} {u.lastName}
 								</Text>
 							</Box>

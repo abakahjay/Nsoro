@@ -29,14 +29,14 @@ const useStories = () => {
 
 	const uploadStory = async (file) => {
 		if (!file) return;
-		if (!/^(image|video)\//.test(file.type)) return showToast("Error", "Stories can be a photo or a video", "error");
-		if (file.size > MAX_STORY_BYTES) return showToast("Error", "Story must be less than 50MB", "error");
+		if (!/^(image|video)\//.test(file.type)) return showToast("Error", "A moment can be a photo or a video", "error");
+		if (file.size > MAX_STORY_BYTES) return showToast("Error", "A moment must be less than 50MB", "error");
 		setIsUploading(true);
 		try {
 			const form = new FormData();
 			form.append("file", file);
 			await API.post("/api/v1/stories", form, { headers: auth() });
-			showToast("Story shared", "It will disappear after 24 hours", "success");
+			showToast("Moment shared", "It will disappear after 24 hours", "success");
 			await refresh();
 		} catch (error) {
 			showToast("Error", error.response?.data?.error || error.message, "error");

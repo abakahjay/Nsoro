@@ -14,7 +14,7 @@ const firstUnseen = (group) => {
 	return i === -1 ? 0 : i;
 };
 
-// Full-screen story player. Phones: edge to edge. Tablets/desktop: a 9:16 card
+// Full-screen moment player ("Moments" = stories, shown for 24 hours). Phones: edge to edge. Tablets/desktop: a 9:16 card
 // centred on a dark backdrop.
 export default function StoryViewer({ groups, startGroup, onClose, onSeen, onDelete }) {
 	const [g, setG] = useState(startGroup);
@@ -148,7 +148,7 @@ export default function StoryViewer({ groups, startGroup, onClose, onSeen, onDel
 							<Image
 								key={story._id}
 								src={mediaUrl(story.fileId)}
-								alt={`${group.user.username}'s story`}
+								alt={`${group.user.username}'s moment`}
 								w='100%'
 								h='100%'
 								objectFit='contain'
@@ -209,7 +209,7 @@ export default function StoryViewer({ groups, startGroup, onClose, onSeen, onDel
 							<Button leftIcon={<ViewIcon />} size='sm' variant='ghost' color='white' onClick={showViewers}>
 								{story.viewCount ?? 0} {story.viewCount === 1 ? "viewer" : "viewers"}
 							</Button>
-							<IconButton aria-label='Delete story' icon={<DeleteIcon />} size='sm' variant='ghost' color='white' onClick={() => onDelete(story._id)} />
+							<IconButton aria-label='Delete moment' icon={<DeleteIcon />} size='sm' variant='ghost' color='white' onClick={() => onDelete(story._id)} />
 						</Flex>
 					)}
 

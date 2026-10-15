@@ -1,5 +1,5 @@
 import { Box, Link, Tooltip } from "@chakra-ui/react";
-import { Link as RouterLink } from "react-router-dom";
+import { NavLink as RouterLink } from "react-router-dom";
 import { MessagesLogo } from "../../assets/constants";
 import { UnreadBadge } from "./Notifications";
 import useInboxStore from "../../store/useInboxStore";
@@ -14,8 +14,8 @@ const Messages = () => {
 				as={RouterLink}
 				alignItems={"center"}
 				gap={4}
-				_hover={{ bg: "ig.hover" }}
-				borderRadius={6}
+				_hover={{ bg: "nsoro.hover" }}
+				borderRadius="xl"
 				p={2}
 				w={{ base: 10, xl: "full" }}
 				justifyContent={{ base: "center", xl: "flex-start" }}

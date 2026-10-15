@@ -3,21 +3,22 @@ import { Grid, GridItem, Modal, ModalBody, ModalCloseButton, ModalContent, Modal
 import PostMedia from "../FeedPosts/PostMedia";
 import FeedPost from "../FeedPosts/FeedPost";
 
-// 3-column square grid (Explore, Saved, Likes). Tapping a tile opens the full post -
-// header, media, likes, comments - read-only as far as deleting goes, since these
+// 3-column grid (Explore, Saved, Starred). Tapping a tile opens the full post -
+// header, media, stars, comments - read-only as far as deleting goes, since these
 // posts can belong to anyone.
 export default function PostGrid({ posts, emptyText = "No posts yet." }) {
 	const [openPost, setOpenPost] = useState(null);
 
 	return (
 		<>
-			<Grid templateColumns='repeat(3, 1fr)' gap={1}>
-				{posts === null && Array.from({ length: 9 }, (_, i) => <Skeleton key={i} aspectRatio={1} />)}
+			<Grid templateColumns='repeat(3, 1fr)' gap={{ base: 1, md: 3 }} px={{ base: 1, md: 0 }}>
+				{posts === null && Array.from({ length: 9 }, (_, i) => <Skeleton key={i} aspectRatio={1} borderRadius='xl' />)}
 				{posts?.map((post) => (
 					<GridItem
 						key={post._id}
 						aspectRatio={1}
 						overflow='hidden'
+						borderRadius={{ base: "md", md: "xl" }}
 						cursor='pointer'
 						onClick={() => setOpenPost(post)}
 						_hover={{ opacity: 0.85 }}
@@ -34,7 +35,7 @@ export default function PostGrid({ posts, emptyText = "No posts yet." }) {
 
 			<Modal isOpen={!!openPost} onClose={() => setOpenPost(null)} size={{ base: "full", md: "xl" }} scrollBehavior='inside'>
 				<ModalOverlay />
-				<ModalContent bg='ig.bg'>
+				<ModalContent bg='nsoro.bg'>
 					<ModalCloseButton zIndex={2} />
 					<ModalBody pt={10}>{openPost && <FeedPost post={openPost} />}</ModalBody>
 				</ModalContent>

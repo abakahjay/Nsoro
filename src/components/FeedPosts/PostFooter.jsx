@@ -35,10 +35,10 @@ const PostFooter = ({ post, isProfilePage, creatorProfile, likeState }) => {
 	};
 
 	return (
-		<Box mb={{ base: 6, md: 10 }} marginTop={"auto"}>
-			{/* counts sit right next to the like and comment icons */}
+		<Box mb={isProfilePage ? { base: 6, md: 10 } : 3} marginTop={"auto"}>
+			{/* counts sit right next to the star and comment icons */}
 			<Flex alignItems={"center"} gap={4} w={"full"} pt={0} mb={2} mt={{ base: 2, md: 3 }}>
-				<Flex as='button' aria-label={isLiked ? "Unlike" : "Like"} onClick={handleLikePost} fontSize={18} alignItems='center' gap={1.5}>
+				<Flex as='button' aria-label={isLiked ? "Unstar" : "Star"} onClick={handleLikePost} fontSize={18} alignItems='center' gap={1.5}>
 					{!isLiked ? <LikeLogo /> : <UnlikeLogo />}
 					{likes > 0 && <Text as='span' fontSize='sm' fontWeight='semibold'>{likes}</Text>}
 				</Flex>
@@ -69,10 +69,10 @@ const PostFooter = ({ post, isProfilePage, creatorProfile, likeState }) => {
 					{isSaved ? <PiBookmarkSimpleFill /> : <PiBookmarkSimpleBold />}
 				</Box>
 			</Flex>
-			{/* the post modal on a profile keeps the classic "n likes" line */}
+			{/* the post modal on a profile shows an "n stars" line */}
 			{isProfilePage && (
 				<Text fontWeight={600} fontSize={"sm"}>
-					{likes} {likes === 1 ? "like" : "likes"}
+					{likes} {likes === 1 ? "star" : "stars"}
 				</Text>
 			)}
 
@@ -114,7 +114,7 @@ const PostFooter = ({ post, isProfilePage, creatorProfile, likeState }) => {
 						<InputRightElement>
 							<Button
 								fontSize={14}
-								color={"blue.500"}
+								color={"brand.400"}
 								fontWeight={600}
 								cursor={"pointer"}
 								_hover={{ color: "white" }}

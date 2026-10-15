@@ -7,7 +7,7 @@ import { avatarUrl, imageUrl, mediaUrl } from "../../utils/media";
 import { timeAgo } from "../../utils/timeAgo";
 
 const describe = (n) => {
-	if (n.type === "like") return "liked your post.";
+	if (n.type === "like") return "starred your post.";
 	if (n.type === "follow") return "started following you.";
 	return `commented: ${n.text}`;
 };
@@ -48,7 +48,7 @@ export default function NotificationsPage() {
 				))}
 
 			{loaded && notifications.length === 0 && (
-				<Text color='gray.400'>When someone likes or comments on your posts, or follows you, you&apos;ll see it here.</Text>
+				<Text color='gray.400'>When someone stars or comments on your posts, or follows you, you&apos;ll see it here.</Text>
 			)}
 
 			{groups.map(({ label, items }) => (

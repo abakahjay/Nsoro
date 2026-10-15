@@ -23,7 +23,7 @@ export default function SuggestedUser({ user }) {
 				<Link as={RouterLink} to={`/${user?.username}`} fontWeight='semibold' fontSize='sm' noOfLines={1}>
 					{user?.username}
 				</Link>
-				<Text fontSize='xs' color='ig.secondary' noOfLines={1}>
+				<Text fontSize='xs' color='nsoro.secondary' noOfLines={1}>
 					{subtitle}
 				</Text>
 			</Box>
@@ -34,8 +34,8 @@ export default function SuggestedUser({ user }) {
 					minW={0}
 					fontSize='xs'
 					fontWeight='semibold'
-					color={isFollowing ? "ig.text" : "ig.link"}
-					_hover={{ color: isFollowing ? "ig.secondary" : "white" }}
+					color={isFollowing ? "nsoro.text" : "nsoro.link"}
+					_hover={{ color: isFollowing ? "nsoro.secondary" : "white" }}
 					isLoading={isUpdating}
 					onClick={handleFollowUser}
 				>

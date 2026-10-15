@@ -19,7 +19,7 @@ export default function MoreMenu({ authUser, onLogout }) {
 					aria-label='More'
 					alignItems='center'
 					gap={4}
-					_hover={{ bg: "ig.hover" }}
+					_hover={{ bg: "nsoro.hover" }}
 					borderRadius={6}
 					p={2}
 					w={{ base: 10, xl: "full" }}
@@ -48,7 +48,7 @@ export default function MoreMenu({ authUser, onLogout }) {
 				<MenuItem icon={<FiUser size={18} />} as='a' href='https://portfolio-8jmo.onrender.com/' target='_blank' rel='noreferrer'>
 					About the developer
 				</MenuItem>
-				<MenuDivider borderColor='ig.border' />
+				<MenuDivider borderColor='nsoro.border' />
 				<MenuItem
 					onClick={() => {
 						onLogout(user?._id);

@@ -85,7 +85,7 @@ export default function ChatPage() {
 
 	return (
 		<Flex direction='column' h='100dvh' w='full'>
-			<Flex alignItems='center' gap={3} px={4} py={3} borderBottom='1px solid' borderColor='ig.border'>
+			<Flex alignItems='center' gap={3} px={4} py={3} borderBottom='1px solid' borderColor='nsoro.border'>
 				<IconButton as={RouterLink} to='/messages' icon={<ArrowBackIcon />} aria-label='Back to messages' variant='ghost' size='sm' display={{ base: "inline-flex", md: "none" }} />
 				<Avatar src={profileImageUrl || undefined} referrerPolicy='no-referrer' name={userProfile?.username} size='sm' />
 				{userProfile ? (
@@ -116,7 +116,7 @@ export default function ChatPage() {
 				{groupByDay(messages).map((day) => (
 					<Box key={day.key}>
 						<Flex position='sticky' top='-16px' zIndex={1} justifyContent='center' py={2} pointerEvents='none'>
-							<Text fontSize='xs' fontWeight='semibold' color='ig.secondary' bg='ig.bg' border='1px solid' borderColor='ig.border' px={3} py={1} borderRadius='full'>
+							<Text fontSize='xs' fontWeight='semibold' color='nsoro.secondary' bg='nsoro.bg' border='1px solid' borderColor='nsoro.border' px={3} py={1} borderRadius='full'>
 								{dayLabel(day.date)}
 							</Text>
 						</Flex>
@@ -147,9 +147,9 @@ export default function ChatPage() {
 			</Box>
 
 			{editing && (
-				<Flex alignItems='center' px={4} py={2} gap={2} bg='whiteAlpha.100' borderTop='1px solid' borderColor='whiteAlpha.200'>
+				<Flex alignItems='center' px={4} py={2} gap={2} bg='whiteAlpha.100' borderTop='1px solid' borderColor='nsoro.border'>
 					<Box flex={1} minW={0}>
-						<Text fontSize='xs' color='blue.300' fontWeight='semibold'>
+						<Text fontSize='xs' color='gold.400' fontWeight='semibold'>
 							Editing message
 						</Text>
 						<Text fontSize='xs' color='gray.400' noOfLines={1}>
@@ -161,7 +161,7 @@ export default function ChatPage() {
 			)}
 
 			{recorder.isRecording ? (
-				<Flex alignItems='center' gap={3} px={4} py={3} pb='max(12px, env(safe-area-inset-bottom))' borderTop='1px solid' borderColor='whiteAlpha.300'>
+				<Flex alignItems='center' gap={3} px={4} py={3} pb='max(12px, env(safe-area-inset-bottom))' borderTop='1px solid' borderColor='nsoro.border'>
 					<IconButton aria-label='Cancel recording' icon={<DeleteIcon />} variant='ghost' borderRadius='full' onClick={recorder.cancel} />
 					<Flex flex={1} alignItems='center' gap={2} bg='whiteAlpha.100' borderRadius='full' px={4} h='40px'>
 						<Box w='10px' h='10px' borderRadius='full' bg='red.500' sx={{ animation: "pulse 1s ease-in-out infinite", "@keyframes pulse": { "50%": { opacity: 0.3 } } }} />
@@ -172,10 +172,10 @@ export default function ChatPage() {
 							max {fmt(MAX_VOICE_SECONDS)}
 						</Text>
 					</Flex>
-					<IconButton aria-label='Send voice message' icon={<IoSend />} colorScheme='blue' borderRadius='full' onClick={finishRecording} />
+					<IconButton aria-label='Send voice message' icon={<IoSend />} colorScheme='brand' borderRadius='full' onClick={finishRecording} />
 				</Flex>
 			) : (
-				<Flex as='form' onSubmit={handleSubmit} gap={2} px={4} py={3} pb='max(12px, env(safe-area-inset-bottom))' borderTop='1px solid' borderColor='whiteAlpha.300'>
+				<Flex as='form' onSubmit={handleSubmit} gap={2} px={4} py={3} pb='max(12px, env(safe-area-inset-bottom))' borderTop='1px solid' borderColor='nsoro.border'>
 					<Input
 						ref={inputRef}
 						placeholder={editing ? "Edit message…" : "Message…"}
@@ -188,7 +188,7 @@ export default function ChatPage() {
 						autoFocus
 					/>
 					{draft.trim() || editing ? (
-						<IconButton type='submit' icon={<IoSend />} aria-label={editing ? "Save edit" : "Send"} colorScheme='blue' borderRadius='full' isDisabled={!draft.trim()} />
+						<IconButton type='submit' icon={<IoSend />} aria-label={editing ? "Save edit" : "Send"} colorScheme='brand' borderRadius='full' isDisabled={!draft.trim()} />
 					) : (
 						<IconButton aria-label='Record voice message' icon={<BsMicFill />} borderRadius='full' variant='ghost' fontSize='20px' onClick={recorder.start} />
 					)}
@@ -247,7 +247,7 @@ function MessageRow({ msg, mine, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUn
 							_focusVisible={{ opacity: 1 }}
 							onClick={onOpenMenu}
 						/>
-						<MenuList bg='gray.800' borderColor='whiteAlpha.300' minW='150px'>
+						<MenuList bg='nsoro.surface' borderColor='nsoro.border' minW='150px'>
 							{!isVoice && <MenuItem bg='transparent' onClick={onEdit}>Edit</MenuItem>}
 							{!isVoice && <MenuItem bg='transparent' onClick={onCopy}>Copy</MenuItem>}
 							<MenuItem bg='transparent' color='red.300' onClick={onUnsend}>
@@ -261,7 +261,7 @@ function MessageRow({ msg, mine, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUn
 					px={isVoice ? 3 : 4}
 					py={2}
 					borderRadius='2xl'
-					bg={mine ? "blue.500" : "whiteAlpha.200"}
+					bg={mine ? "brand.600" : "nsoro.raised"}
 					color='white'
 					opacity={msg.pending ? 0.6 : 1}
 					wordBreak='break-word'
@@ -281,12 +281,12 @@ function MessageRow({ msg, mine, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUn
 				</Box>
 			</Flex>
 			{seen && !showSent && (
-				<Text fontSize='11px' color='ig.secondary' textAlign='right' mt={1} px={1}>
+				<Text fontSize='11px' color='nsoro.secondary' textAlign='right' mt={1} px={1}>
 					Seen
 				</Text>
 			)}
 			{showSent && (
-				<Text fontSize='11px' color='ig.secondary' textAlign={mine ? "right" : "left"} mt={1} px={1}>
+				<Text fontSize='11px' color='nsoro.secondary' textAlign={mine ? "right" : "left"} mt={1} px={1}>
 					{mine ? "Sent" : "Received"} {fullDateTime(msg.timestamp)}
 					{msg.editedAt ? ` · edited ${fullDateTime(msg.editedAt)}` : ""}
 				</Text>
@@ -300,7 +300,7 @@ const TICKS = {
 	pending: { icon: BsClock, color: "whiteAlpha.700", label: "Sending" },
 	sent: { icon: BsCheck2, color: "whiteAlpha.700", label: "Sent" },
 	delivered: { icon: BsCheck2All, color: "whiteAlpha.700", label: "Delivered" },
-	read: { icon: BsCheck2All, color: "#5ff4ff", label: "Read" }, // bright aqua: stands out on the blue bubble
+	read: { icon: BsCheck2All, color: "#7cd4ff", label: "Read" }, // sky blue: stands out on the green bubble
 };
 function Ticks({ state }) {
 	const { icon: Icon, color, label } = TICKS[state];

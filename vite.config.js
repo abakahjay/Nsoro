@@ -35,7 +35,7 @@ export default defineConfig({
         id: '/',
         name: 'Nsoro',
         short_name: 'Nsoro',
-        description: 'Share photos, videos, stories and reels, and chat with friends.',
+        description: 'Share photos, videos and moments, and chat and call with friends.',
         start_url: '/?source=app',
         scope: '/',
         display: 'standalone',
@@ -52,7 +52,6 @@ export default defineConfig({
         // long-press the app icon on Android / right-click in the Windows taskbar
         shortcuts: [
           { name: 'Messages', url: '/messages', icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }] },
-          { name: 'Reels', url: '/reels', icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }] },
           { name: 'Notifications', url: '/notifications', icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }] },
         ],
       },

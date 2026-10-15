@@ -73,7 +73,7 @@ export default function SendUpdatePage() {
 
 			<FormControl mb={4}>
 				<FormLabel>Subject</FormLabel>
-				<Input value={form.subject} onChange={set("subject")} placeholder='New: Stories, Reels and voice messages' maxLength={120} />
+				<Input value={form.subject} onChange={set("subject")} placeholder='New: voice and video calls' maxLength={120} />
 			</FormControl>
 			<FormControl mb={4}>
 				<FormLabel>Message</FormLabel>
@@ -86,7 +86,7 @@ export default function SendUpdatePage() {
 				</FormControl>
 				<FormControl>
 					<FormLabel>Button opens</FormLabel>
-					<Input value={form.ctaPath} onChange={set("ctaPath")} placeholder='/reels' />
+					<Input value={form.ctaPath} onChange={set("ctaPath")} placeholder='/messages' />
 					<FormHelperText>A page on the site, e.g. /download</FormHelperText>
 				</FormControl>
 			</Flex>
@@ -95,7 +95,7 @@ export default function SendUpdatePage() {
 				<Button variant='outline' flex={1} isDisabled={!ready} isLoading={sending === "test"} onClick={() => send(true)}>
 					Send a test to me
 				</Button>
-				<Button colorScheme='blue' flex={1} isDisabled={!ready} isLoading={sending === "all"} onClick={confirm.onOpen}>
+				<Button colorScheme='brand' flex={1} isDisabled={!ready} isLoading={sending === "all"} onClick={confirm.onOpen}>
 					Send to everyone
 				</Button>
 			</Flex>
@@ -107,7 +107,7 @@ export default function SendUpdatePage() {
 						<AlertDialogBody>“{form.subject}” goes to every user with email notifications on. This can&apos;t be undone.</AlertDialogBody>
 						<AlertDialogFooter gap={3}>
 							<Button ref={cancelRef} onClick={confirm.onClose} variant='ghost'>Cancel</Button>
-							<Button colorScheme='blue' onClick={() => send(false)}>Send</Button>
+							<Button colorScheme='brand' onClick={() => send(false)}>Send</Button>
 						</AlertDialogFooter>
 					</AlertDialogContent>
 				</AlertDialogOverlay>

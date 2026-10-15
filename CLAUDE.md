@@ -12,7 +12,7 @@ The product is called **Nsoro**. It must not use Instagram's or Meta's name, log
 
 - **Brand:** colours are green `#0a7a4b`, `#2f9e44` and gold `#f2b705`. The logo (deep-green tile, gold star, Ghana's black star) is `public/icons/nsoro-logo.svg` (`NsoroMark`/`NsoroLogo` in `src/assets/constants.jsx`).
 - **Icon and logo images:** `node scripts/generate-icons.mjs` renders all of them with headless Chrome: the PWA/iOS/maskable icons, the favicons, `public/logo.png`, `public/auth.png` and `desktop/build/icon.png`.
-- **UI icons:** Phosphor (`react-icons/pi`), wrapped in `src/assets/constants.jsx`. Use a bell for activity, two bubbles for messages and a film reel for reels. Never copy Instagram's SVGs.
+- **UI icons:** Phosphor (`react-icons/pi`), wrapped in `src/assets/constants.jsx`. Use a bell for activity, two bubbles for messages and a star for liking. Never copy Instagram's SVGs.
 - **API paths:** the app calls `/api/v1/nsoro/*`. The backend also still serves `/api/v1/instagram/*` for older installs.
 - **Push app key:** `nsoro`. The backend migrates old `instagram` rows to it.
 - **Old names kept on purpose:** the GitHub repo name, the Render URL (`instagrammmm-z34p`) and the Android package id `com.instagrammmm.app` (with `assetlinks.json`). Changing them would break links and installed apps.
@@ -79,9 +79,11 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 
 **Responsive layout.** Below the `md` breakpoint, `PageLayout` hides the sidebar and renders `components/NavBar/MobileNav.jsx` instead: a top bar and a fixed bottom tab bar. The bottom bar is hidden inside an open chat, and phones log out from their own profile header. `FeedPost` handles double-tap-to-like with its own tap timer, not `onDoubleClick`, so it also works on touch.
 
-**Stories, Reels, share links.**
-- `components/Stories/StoriesBar.jsx` sits at the top of the feed and uses `hooks/useStories.js` (`/api/v1/stories`). `StoryViewer.jsx` is the full-screen player: photos last 5 s via requestAnimationFrame, videos report their own progress, tap left or right to move, and holding pauses.
-- `/reels` plays video posts as a vertical scroll-snap feed. It hides the phone top bar.
+**Moments (stories), share links.**
+- Stories are called **Moments** everywhere a user sees them. The code and API keep the name "stories".
+- `components/Stories/StoriesBar.jsx` is a card at the top of the feed with rounded-square tiles and a gold ring. It uses `hooks/useStories.js` (`/api/v1/stories`).
+- `StoryViewer.jsx` is the full-screen player: photos last 5 s via requestAnimationFrame, videos report their own progress, tap left or right to move, and holding pauses.
+- Reels were removed on purpose, because they were an Instagram signature. Videos are ordinary posts, and `/reels` redirects to `/`.
 - `/p/:postId` is a public single-post page. `utils/share.js` uses the native share sheet and falls back to copying the link.
 
 **Breakpoints.** Phones (base) get MobileNav; tablets (md–lg) get a 72px icon rail; `xl` and up get the 240px sidebar with labels. Every `SideBar/*` item switches between collapsed and labelled at `xl`, not `md`, and PageLayout sets the rail width to match.
@@ -110,7 +112,7 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 - Signaling is FullBackendd `utils/socket.js`: `call:invite` / `incoming` / `accept` / `accepted` / `decline` / `end` / `ended` / `signal`. Calls ring for 35 s.
 - When a call ends, the server saves a `type: 'call'` message (`callKind`, `callStatus`, `duration`) that shows in the chat and inbox.
 - The caller sees "Calling…" until the callee's device confirms, then "Ringing…". The open app confirms with `call:ringing`; with the app closed, the service worker posts the push receipt.
-- Only public STUN is configured.
+- Only public STUN is configured. Callers behind strict NATs need a TURN server via `VITE_TURN_URL`, `VITE_TURN_USERNAME` and `VITE_TURN_CREDENTIAL`.
 
 **Ticks (read receipts).**
 - One grey tick means sent. Two grey ticks mean `deliveredAt` is set (the recipient's app was open, or a push reached their phone). Blue ticks mean `read`, and "Seen" appears under the newest read message.
@@ -119,21 +121,34 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 
 **Video playback.**
 - Always start videos with `playVideo()` from `utils/media.js`. Phones refuse to start a video with sound without a fresh tap; `playVideo()` then plays it muted and returns `"muted"` so the UI shows "Unmute".
-- A bare `video.play().catch(() => {})` left reels frozen on Android once sound was on. Callers behind strict NATs need a TURN server via `VITE_TURN_URL`, `VITE_TURN_USERNAME` and `VITE_TURN_CREDENTIAL`.
+- A bare `video.play().catch(() => {})` left videos frozen on Android once sound was on.
 
 **Emails.** The email on/off switch is in EditProfile (PATCH `/api/v1/nsoro/settings/email`). `/admin/updates` sends an app-update email to everyone; it's only for `user.role === "admin"`, set with the backend's `scripts/makeInstagramAdmin.js`.
 
-**Look and layout.**
-- **Colours:** theme tokens in `main.jsx`: `ig.bg` #0c1014, `ig.surface`, `ig.border`, `ig.secondary`, `ig.link`. Use them instead of "black" for app chrome; media areas (photos, reels, stories) stay black.
-- **Sidebar order:** Home, Reels, Messages (unread badge from `store/useInboxStore`, kept fresh by `useInboxSync`), Search, Notifications, Create, Profile, then the ☰ More menu (`SideBar/MoreMenu.jsx`: Saved, Get the app, Send an update for admins, About, Switch accounts, Log out).
-- **Floating Messages pill:** `NavBar/MessagesPill`, shown on tablets and up.
-- **Right column:** `SuggestedUsers` shows your account with Switch, suggestions with "Followed by …", and the footer links.
+**Look and layout.** The design must not resemble Instagram.
+- **Colours** (theme in `main.jsx`):
+  - `nsoro.*` page tokens: `bg` #0a1210 (deep forest green-black), `surface`, `raised`, `border`, `text`, `secondary`, `link` (gold).
+  - `brand.*`: emerald. Use `colorScheme='brand'`; its solid buttons are emerald with white text.
+  - `gold.*`: accent.
+  - Don't use blue, `whiteAlpha` greys or "black" for app chrome. Media areas (photos, videos, moments) stay black.
+- **Shapes:**
+  - Avatars are rounded squares (theme `Avatar` plus a global `.chakra-avatar__img` rule).
+  - Feed posts, the Moments tray, the right column and the profile header are rounded cards on `nsoro.surface`. On phones they are full width.
+  - Grids have gaps and rounded tiles.
+- **Stars, not likes:** the like button is a star (`LikeLogo`/`UnlikeLogo`), double-tap pops a gold star, the profile tab says "Starred" and notifications say "starred your post". The API still calls them likes.
+- **Sidebar:**
+  - It sits on `nsoro.surface`. Items are `NavLink`s, and the current page gets a green tint plus a gold left bar (styled in `SideBar.jsx`).
+  - Order: Home, Messages (unread badge from `store/useInboxStore`, kept fresh by `useInboxSync`), Search, Notifications, Create, Profile.
+  - The ☰ More menu (`SideBar/MoreMenu.jsx`) holds Saved, Get the app, Send an update for admins, About and Log out.
+- **Phones:** the bottom bar is Home, Search, Create, Notifications, Profile; the current tab is gold. Messages is in the top bar.
+- **Profile:** a card with an emerald-to-gold banner, the avatar overlapping it, full name then @username, bio and count chips. The tabs are a segmented control: Posts · Saved (owner only) · Starred.
+- **Right column:** a "People to follow" card with your account, suggestions with "Followed by …", and the footer links. There is no "Switch" and no floating Messages pill (both were Instagram signatures).
 - **Messages:** `pages/Messages/Messages.jsx` handles both `/messages` and `/messages/:id`. It is two-pane (inbox plus chat) on tablets and up and one screen at a time on phones, and has a New message search modal.
 - **Unread updates:** `useChat` dispatches a window `inbox:refresh` event after marking a conversation read.
 - **Security:** API calls send the login token through an axios interceptor (`utils/api.js`). Social actions use the backend's logged-in `/api/v1/nsoro/*` routes.
 - **Security headers** (CSP, X-Frame-Options, etc.) are set in Render → instagrammmm → Headers. The CSP only allows `fullbackendd.onrender.com` for API, socket and media calls, so a new backend or media host must be added there.
 
- `main.jsx` sets up the Chakra theme (dark mode by default, black body background) and registers `/sw.js`. `vite.config.js` also configures `vite-plugin-pwa`, whose manifest still carries leftover "Amazon React" naming.
+ `main.jsx` sets up the Chakra theme (dark mode by default, `nsoro.bg` body background) and registers `/sw.js`. `vite.config.js` also configures `vite-plugin-pwa`.
 
 ## Dead or legacy code
 

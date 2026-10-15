@@ -77,13 +77,13 @@ const EditProfile = ({ isOpen, onClose}) => {
 		<>
 			<Modal isOpen={isOpen} onClose={onClose}>
 				<ModalOverlay />
-				<ModalContent bg={"ig.surface"} boxShadow={"xl"} border={"1px solid"} borderColor='ig.border' mx={3}>
+				<ModalContent bg={"nsoro.surface"} boxShadow={"xl"} border={"1px solid"} borderColor='nsoro.border' mx={3}>
 					<ModalHeader />
 					<ModalCloseButton />
 					<ModalBody>
 						{/* Container Flex */}
-						<Flex bg={"ig.surface"}>
-							<Stack spacing={4} w={"full"} maxW={"md"} bg={"ig.surface"} p={6} my={0}>
+						<Flex bg={"nsoro.surface"}>
+							<Stack spacing={4} w={"full"} maxW={"md"} bg={"nsoro.surface"} p={6} my={0}>
 								<Heading lineHeight={1.1} fontSize={{ base: "2xl", sm: "3xl" }}>
 									Edit Profile
 								</Heading>
@@ -144,7 +144,7 @@ const EditProfile = ({ isOpen, onClose}) => {
 										<FormLabel htmlFor='email-notifications' fontSize={"sm"} mb={0}>Email notifications</FormLabel>
 										<Text fontSize='xs' color='gray.500'>New followers, comments, messages while you&apos;re away, and app updates</Text>
 									</Box>
-									<Switch id='email-notifications' colorScheme='blue' isChecked={emailOn} isDisabled={savingEmailPref} onChange={(e) => toggleEmails(e.target.checked)} />
+									<Switch id='email-notifications' colorScheme='brand' isChecked={emailOn} isDisabled={savingEmailPref} onChange={(e) => toggleEmails(e.target.checked)} />
 								</FormControl>
 
 								<PushNotificationsToggle />
@@ -161,11 +161,11 @@ const EditProfile = ({ isOpen, onClose}) => {
 										Cancel
 									</Button>
 									<Button
-										bg={"blue.400"}
+										bg={"brand.300"}
 										color={"white"}
 										size='sm'
 										w='full'
-										_hover={{ bg: "blue.500" }}
+										_hover={{ bg: "brand.400" }}
 										onClick={handleEditProfile}
 										isLoading={isUpdating}
 									>

@@ -14,7 +14,8 @@ const ProfilePosts = ({ user }) => {
 	return (
 		<Grid
 			templateColumns={"repeat(3, 1fr)"}
-			gap={1}
+			gap={{ base: 1, md: 3 }}
+			px={{ base: 1, md: 0 }}
 			columnGap={1}
 		>
 			{isLoading &&
@@ -42,7 +43,7 @@ export default ProfilePosts;
 const NoPostsFound = () => {
 	return (
 		<Flex flexDir='column' alignItems='center' textAlign={"center"} mx={"auto"} mt={{ base: 10, md: 16 }} px={6} gap={3}>
-			<Flex w='62px' h='62px' borderRadius='full' border='2px solid' borderColor='whiteAlpha.800' alignItems='center' justifyContent='center'>
+			<Flex w='62px' h='62px' borderRadius='30%' border='2px solid' borderColor='gold.500' color='gold.400' alignItems='center' justifyContent='center'>
 				<FiCamera size={28} />
 			</Flex>
 			<Text fontSize={{ base: "2xl", md: "3xl" }} fontWeight='extrabold'>

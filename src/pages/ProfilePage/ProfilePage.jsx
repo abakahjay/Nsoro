@@ -30,7 +30,7 @@ export function ProfilePage ({authUser,onLogout}){
 
     return <Container maxW={'container.lg'} py={{ base: 2, md: 5 }} px={{ base: 0, sm: 4 }}>
             {/* Profile of {username } */}
-            <Flex py={{ base: 4, md: 10 }} px={4} pl={{ base: 4, md: 10 }} w={"full"} maxW='935px' mx={"auto"} flexDirection={"column"}>
+            <Flex py={{ base: 3, md: 6 }} px={{ base: 2, md: 4 }} w={"full"} maxW='935px' mx={"auto"} flexDirection={"column"}>
                 {!isLoading && userProfile &&<ProfileHeader  authUser={userProfile} onLogout={onLogout} username={username} owner={user?.username} viewer={user}/>}
                 {isLoading && <ProfileHeaderSkeleton />}
             </Flex>
@@ -38,13 +38,10 @@ export function ProfilePage ({authUser,onLogout}){
 				px={{ base: 0, sm: 4 }}
 				w={"full"}
 				mx={"auto"}
-				borderTop={"1px solid"}
-				borderColor={"whiteAlpha.300"}
 				direction={"column"}
 			>
 				<ProfileTabs active={tab} onChange={setTab} isOwner={isOwner} />
 				{userProfile && tab === "posts" && <ProfilePosts user={userProfile.user}/>}
-				{userProfile && tab === "reels" && <UserReels userId={userProfile.user._id} />}
 				{userProfile && tab === "saved" && isOwner && <SavedPosts savedCount={user?.saved?.length || 0} />}
 				{userProfile && tab === "likes" && <LikedPosts userId={userProfile.user._id} />}
 			</Flex>
@@ -64,19 +61,6 @@ function SavedPosts({ savedCount }) {
 	return <PostGrid posts={posts} emptyText='Save posts you want to see again - only you can see what you’ve saved.' />;
 }
 
-// The person's video posts (the Reels tab on a profile).
-function UserReels({ userId }) {
-	const [posts, setPosts] = useState(null);
-	useEffect(() => {
-		const controller = new AbortController();
-		setPosts(null);
-		API.get(`/api/v1/posts/user/${userId}`, { signal: controller.signal })
-			.then(({ data }) => setPosts(data.posts.filter((p) => p.mediaType === "video")))
-			.catch((e) => e.message !== "canceled" && setPosts([]));
-		return () => controller.abort();
-	}, [userId]);
-	return <PostGrid posts={posts} emptyText='No reels yet.' />;
-}
 
 function LikedPosts({ userId }) {
 	const [posts, setPosts] = useState(null);
@@ -88,7 +72,7 @@ function LikedPosts({ userId }) {
 			.catch((e) => e.message !== "canceled" && setPosts([]));
 		return () => controller.abort();
 	}, [userId]);
-	return <PostGrid posts={posts} emptyText='No liked posts yet.' />;
+	return <PostGrid posts={posts} emptyText='No starred posts yet.' />;
 }
 
 
@@ -115,7 +99,7 @@ const UserNotFound = () => {
 	return (
 		<Flex flexDir='column' textAlign={"center"} mx={"auto"}>
 			<Text fontSize={"2xl"}>User Not Found</Text>
-			<Link as={RouterLink} to={"/"} color={"blue.500"} w={"max-content"} mx={"auto"}>
+			<Link as={RouterLink} to={"/"} color={"brand.400"} w={"max-content"} mx={"auto"}>
 				Go home
 			</Link>
 		</Flex>

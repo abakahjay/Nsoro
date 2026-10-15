@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 import './main.css';//This is for the styles
 import { ChakraProvider } from "@chakra-ui/react";
-import { extendTheme } from "@chakra-ui/react";
+import { extendTheme, theme as baseTheme } from "@chakra-ui/react";
 import { mode } from "@chakra-ui/theme-tools";
 // import { BrowserRouter } from "react-router-dom";
 import { consumeGoogleLoginToken } from './utils/auth';
@@ -21,39 +21,85 @@ if ('serviceWorker' in navigator) {
 }
 
 
-// Nsoro dark theme: near-black blue-grey page,
-// #f5f5f5 text, system font at 14px, lighter surfaces for menus/dialogs.
+// Nsoro theme ("star at night"): deep forest-green page, raised green-tinted
+// surfaces, emerald for actions and gold for highlights.
+//   nsoro.*  page tokens (use these instead of "black"/grey for app chrome;
+//            photos and videos keep a black backdrop)
+//   brand.*  emerald scale - colorScheme='brand' on buttons, switches, badges
+//   gold.*   accent - stars, active nav, moments ring
 const colors = {
-  ig: {
-    bg: "#0c1014",
-    surface: "#1b1f24",
-    hover: "rgba(255,255,255,0.08)",
-    border: "rgba(255,255,255,0.12)",
-    text: "#f5f5f5",
-    secondary: "#a8a8a8",
-    link: "#0095f6",
+  nsoro: {
+    bg: "#0a1210",
+    surface: "#111d18",
+    raised: "#172620",
+    hover: "rgba(120,220,170,0.08)",
+    border: "#1f3229",
+    text: "#ecf3ee",
+    secondary: "#8fa59a",
+    link: "#f5c542",
+  },
+  brand: {
+    50: "#e7f7ef",
+    100: "#c3ead6",
+    200: "#99dab9",
+    300: "#6cc99a",
+    400: "#43b87e",
+    500: "#1d9f63",
+    600: "#13844f",
+    700: "#0b6a3f",
+    800: "#075230",
+    900: "#043a21",
+  },
+  gold: {
+    100: "#fff3c4",
+    200: "#ffe58a",
+    300: "#fbd250",
+    400: "#f5c542",
+    500: "#f2b705",
+    600: "#c99503",
+    700: "#9a7202",
   },
 };
 
 const fonts = {
-  heading: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`,
-  body: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`,
+  heading: `"Segoe UI Variable Display", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif`,
+  body: `"Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif`,
 };
 
 const styles = {
   global: (props) => ({
     body: {
-      bg: mode("gray.100", "ig.bg")(props),
-      color: mode("gray.800", "ig.text")(props),
+      bg: mode("gray.100", "nsoro.bg")(props),
+      color: mode("gray.800", "nsoro.text")(props),
       fontSize: "14px",
     },
+    // Chakra draws avatar photos as circles; follow the rounded-square frame instead.
+    ".chakra-avatar__img": { borderRadius: "inherit" },
   }),
 };
 
-// Dialogs and menus sit on the lighter surface.
+// Brand buttons are solid emerald with white text (Chakra's dark-mode default
+// would be a pale mint), and everything is a little rounder than stock.
+const brandSolid = {
+  bg: "brand.500",
+  color: "white",
+  _hover: { bg: "brand.600", _disabled: { bg: "brand.500" } },
+  _active: { bg: "brand.700" },
+};
 const components = {
-  Modal: { baseStyle: { dialog: { bg: "ig.surface" } } },
-  Menu: { baseStyle: { list: { bg: "ig.surface", borderColor: "ig.border" }, item: { bg: "ig.surface", _hover: { bg: "ig.hover" } } } },
+  Modal: { baseStyle: { dialog: { bg: "nsoro.surface", border: "1px solid", borderColor: "nsoro.border", borderRadius: "2xl" } } },
+  Menu: { baseStyle: { list: { bg: "nsoro.surface", borderColor: "nsoro.border", borderRadius: "xl" }, item: { bg: "nsoro.surface", _hover: { bg: "nsoro.hover" } } } },
+  Button: {
+    baseStyle: { borderRadius: "xl", fontWeight: "semibold" },
+    variants: {
+      solid: (props) => (props.colorScheme === "brand" ? brandSolid : baseTheme.components.Button.variants.solid(props)),
+    },
+  },
+  // Rounded-square avatars - a Nsoro signature (no circles).
+  Avatar: { baseStyle: { container: { borderRadius: "30%" }, excessLabel: { borderRadius: "30%" } } },
+  Switch: { defaultProps: { colorScheme: "brand" } },
+  Input: { defaultProps: { focusBorderColor: "brand.400" } },
+  Textarea: { defaultProps: { focusBorderColor: "brand.400" } },
 };
 
 const config = {

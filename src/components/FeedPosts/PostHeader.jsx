@@ -46,7 +46,7 @@ const PostHeader = ({ post, creatorProfile,profileImageUrl,imageLoading }) => {
                         size={"xs"}
                         bg={"transparent"}
                         fontSize={12}
-                        color={"blue.500"}
+                        color={"brand.400"}
                         fontWeight={"bold"}
                         _hover={{
                             color: "white",

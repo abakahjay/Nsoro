@@ -1,6 +1,6 @@
 import { Box, Link, Tooltip } from "@chakra-ui/react";
 import { PiHouseFill } from "react-icons/pi";
-import { Link as RouterLink } from "react-router-dom";
+import { NavLink as RouterLink } from "react-router-dom";
 
 const Home = () => {
 	return (
@@ -15,11 +15,12 @@ const Home = () => {
 			<Link
 				display={"flex"}
 				to={"/"}
+				end
 				as={RouterLink}
 				alignItems={"center"}
 				gap={4}
-				_hover={{ bg: "whiteAlpha.400" }}
-				borderRadius={6}
+				_hover={{ bg: "nsoro.hover" }}
+				borderRadius="xl"
 				p={2}
 				w={{ base: 10, xl: "full" }}
 				justifyContent={{ base: "center", xl: "flex-start" }}

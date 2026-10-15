@@ -220,7 +220,7 @@ export default function DownloadPage() {
 			</VStack>
 
 			{/* The device you're on */}
-			<Box border='1px solid' borderColor='whiteAlpha.300' borderRadius='xl' p={{ base: 5, md: 6 }} mb={6}>
+			<Box border='1px solid' borderColor='nsoro.border' borderRadius='xl' p={{ base: 5, md: 6 }} mb={6}>
 				{installed || justInstalled ? (
 					<Flex alignItems='center' gap={3}>
 						<CheckCircleIcon color='green.400' boxSize={6} />
@@ -238,14 +238,14 @@ export default function DownloadPage() {
 							<Text fontWeight='bold' fontSize='lg'>
 								{current ? `Get it on ${current.name}` : "Get it on this device"}
 							</Text>
-							<Badge colorScheme='blue' ml='auto'>
+							<Badge colorScheme='brand' ml='auto'>
 								This device
 							</Badge>
 						</Flex>
 
 						{canInstall && (
 							<Box mb={4}>
-								<Button leftIcon={<DownloadIcon />} colorScheme='blue' size='lg' w='full' onClick={onInstall}>
+								<Button leftIcon={<DownloadIcon />} colorScheme='brand' size='lg' w='full' onClick={onInstall}>
 									Install Nsoro
 								</Button>
 								<Text fontSize='xs' color='gray.400' textAlign='center' mt={2}>
@@ -275,9 +275,9 @@ export default function DownloadPage() {
 			<Text fontWeight='bold' mb={2}>
 				Other devices
 			</Text>
-			<Accordion allowToggle border='1px solid' borderColor='whiteAlpha.300' borderRadius='xl' overflow='hidden'>
+			<Accordion allowToggle border='1px solid' borderColor='nsoro.border' borderRadius='xl' overflow='hidden'>
 				{others.map((p) => (
-					<AccordionItem key={p.key} borderColor='whiteAlpha.200'>
+					<AccordionItem key={p.key} borderColor='nsoro.border'>
 						<AccordionButton py={4}>
 							<Flex flex={1} alignItems='center' gap={3} textAlign='left'>
 								<p.icon size={20} />
@@ -307,7 +307,7 @@ export default function DownloadPage() {
 				</Button>
 				<Text color='gray.500' fontSize='xs' textAlign='center'>
 					Installer files are also on{" "}
-					<Link href='https://github.com/abakahjayy/Instagram/releases/latest' isExternal color='blue.300'>
+					<Link href='https://github.com/abakahjayy/Instagram/releases/latest' isExternal color='gold.400'>
 						the releases page
 					</Link>
 					.

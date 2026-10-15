@@ -10,7 +10,7 @@ const HINTS = {
 };
 
 // "Push notifications" switch in Edit profile: alerts on this device for
-// messages, likes, comments and follows, even when the app is closed.
+// messages, stars, comments and follows, even when the app is closed.
 export default function PushNotificationsToggle() {
 	const showToast = useShowToast();
 	const [state, setState] = useState("loading");
@@ -50,15 +50,15 @@ export default function PushNotificationsToggle() {
 			<Box>
 				<FormLabel htmlFor='push-notifications' fontSize={"sm"} mb={0}>Push notifications</FormLabel>
 				<Text fontSize='xs' color='gray.500'>
-					{HINTS[state] || "Messages, likes, comments and follows on this device, even when the app is closed"}
+					{HINTS[state] || "Messages, stars, comments and follows on this device, even when the app is closed"}
 				</Text>
 				{state === "on" && (
-					<Button size='xs' variant='link' colorScheme='blue' mt={1} onClick={test} isDisabled={busy}>Send a test notification</Button>
+					<Button size='xs' variant='link' colorScheme='brand' mt={1} onClick={test} isDisabled={busy}>Send a test notification</Button>
 				)}
 			</Box>
 			<Switch
 				id='push-notifications'
-				colorScheme='blue'
+				colorScheme='brand'
 				isChecked={state === "on"}
 				isDisabled={busy || !["on", "off"].includes(state)}
 				onChange={(e) => toggle(e.target.checked)}

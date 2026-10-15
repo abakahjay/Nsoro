@@ -2,11 +2,10 @@ import {
 	PiBellBold,
 	PiChatCircleBold,
 	PiChatsCircleBold,
-	PiFilmReelBold,
-	PiHeartBold,
-	PiHeartFill,
 	PiMagnifyingGlassBold,
 	PiPlusCircleBold,
+	PiStarBold,
+	PiStarFill,
 } from "react-icons/pi";
 
 // Nsoro brand marks. The artwork lives in public/icons/nsoro-logo.svg
@@ -24,7 +23,7 @@ export const NsoroLogo = () => (
 );
 
 // App icons: Phosphor's rounded set, Nsoro's own look (a bell for activity, two
-// bubbles for messages, a film reel for reels). Same names everywhere they're used.
+// bubbles for messages, a star for liking - "Nsoro" means star). Same names everywhere they're used.
 const icon = (Icon, label) => {
 	const NsoroIcon = ({ size = 24 }) => <Icon size={size} aria-label={label} role='img' color='rgb(245, 245, 245)' />;
 	NsoroIcon.displayName = `${label.replace(/\s/g, "")}Icon`;
@@ -32,10 +31,9 @@ const icon = (Icon, label) => {
 };
 
 export const SearchLogo = icon(PiMagnifyingGlassBold, "Search");
-export const ReelsLogo = icon(PiFilmReelBold, "Reels");
 export const MessagesLogo = icon(PiChatsCircleBold, "Messages");
 export const NotificationsLogo = icon(PiBellBold, "Notifications");
 export const CreatePostLogo = icon(PiPlusCircleBold, "Create");
 export const CommentLogo = icon(PiChatCircleBold, "Comment");
-export const LikeLogo = icon(PiHeartBold, "Like");
-export const UnlikeLogo = ({ size = 24 }) => <PiHeartFill size={size} aria-label='Unlike' role='img' color='#ff3b5c' />;
+export const LikeLogo = icon(PiStarBold, "Star");
+export const UnlikeLogo = ({ size = 24 }) => <PiStarFill size={size} aria-label='Unstar' role='img' color='#f2b705' />;

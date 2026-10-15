@@ -12,8 +12,9 @@ export function SideBar({ authUser, onLogout}){
     return(
         <Box
             height={'100dvh'}
+            bg={'nsoro.surface'}
             borderRight={'1px solid'}
-            borderColor={'whiteAlpha.300'}
+            borderColor={'nsoro.border'}
             position={'sticky'}
             top={0}
             left={0}
@@ -28,6 +29,8 @@ export function SideBar({ authUser, onLogout}){
                 py: "var(--nav-pad)",
                 scrollbarWidth: "none",
                 "&::-webkit-scrollbar": { display: "none" },
+                // the page you're on: green tint + gold bar (NavLink adds .active)
+                "& a.active": { bg: "rgba(29,159,99,0.16)", color: "brand.200", boxShadow: "inset 3px 0 0 #f2b705", fontWeight: "semibold" },
             }}
             >
                 <Flex direction={'column'} w={'full'} minH={'full'} alignItems={{ base: "center", xl: "stretch" }}>
@@ -39,8 +42,8 @@ export function SideBar({ authUser, onLogout}){
                         as={RouterLink}
                         p={2}
                         display={{ base: "block", xl: "none" }}
-                        borderRadius={6}
-                        _hover={{ bg: "whiteAlpha.200" }}
+                        borderRadius="xl"
+                        _hover={{ bg: "nsoro.hover" }}
                         w={10}
                         cursor='pointer'
                         mb='var(--nav-logo-gap)'

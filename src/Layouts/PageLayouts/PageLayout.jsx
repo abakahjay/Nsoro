@@ -8,7 +8,6 @@ import { useLocation } from "react-router-dom";
 import useAuthStore from "../../store/useAuthStore.js";
 import { useNotificationsSync } from "../../hooks/useNotifications.js";
 import { useInboxSync } from "../../hooks/useInboxSync.js";
-import MessagesPill from "../../components/NavBar/MessagesPill.jsx";
 import CallScreen from "../../components/Call/CallScreen.jsx";
 import { useCallSync } from "../../hooks/useCallSync.js";
 
@@ -22,12 +21,10 @@ const PageLayout = ({ authUser, onLogout, children }) => {
     // An open chat is full-screen on phones, like a native app.
     const inChat = pathname.startsWith("/messages/");
     const showMobileBars = canRenderSidebar && !inChat;
-    // Reels are full-bleed on phones: no top bar, just the bottom tabs (like the app).
-    const showMobileTopBar = showMobileBars && pathname !== "/reels";
+    const showMobileTopBar = showMobileBars;
     useNotificationsSync(!!canRenderSidebar);
     useInboxSync(!!canRenderSidebar);
     useCallSync(!!canRenderSidebar);
-    const inMessages = pathname.startsWith("/messages");
     if (checkingUserIsAuth) return <PageLayoutSpinner />;
     return (
             <Flex flexDir={canRenderNavbar ? "column" : "row"}>
@@ -47,8 +44,6 @@ const PageLayout = ({ authUser, onLogout, children }) => {
                     {children}
                 </Box>
                 {showMobileBars && <MobileBottomNav authUser={authUser} onLogout={onLogout} />}
-                {/* floating Messages pill - tablets and up, not on the messages pages */}
-                {canRenderSidebar && !inMessages && <MessagesPill />}
                 {canRenderSidebar && <CallScreen />}
 
                 {/* Portfolio badge - this is a clone/demo project */}
@@ -59,9 +54,9 @@ const PageLayout = ({ authUser, onLogout, children }) => {
                     bottom={{ base: showMobileBars ? "68px" : 4, md: 4 }}
                     right={4}
                     zIndex={1000}
-                    // phones only when signed in: on bigger screens the Messages pill takes this corner and
-                    // the credit lives in the More menu + page footer
-                    display={inChat || pathname === "/reels" ? "none" : canRenderSidebar ? { base: "flex", md: "none" } : "flex"}
+                    // signed in: phones only, and only on the home feed so it never covers tabs or buttons;
+                    // on bigger screens the credit lives in the More menu + page footer
+                    display={inChat ? "none" : canRenderSidebar ? { base: pathname === "/" ? "flex" : "none", md: "none" } : "flex"}
                     alignItems="center"
                     gap={1}
                     px={3}

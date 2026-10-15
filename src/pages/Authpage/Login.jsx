@@ -40,7 +40,7 @@ export default function Login({onAuth}) {
 			)}
 			<Button
 				w={"full"}
-				colorScheme='blue'
+				colorScheme='brand'
 				size={"sm"}
 				fontSize={14}
 				isLoading={isLoading}

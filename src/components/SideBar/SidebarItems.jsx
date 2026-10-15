@@ -4,14 +4,12 @@ import Notifications from "./Notifications";
 import ProfileLink from "./ProfileLink";
 import Search from "./Search";
 import Messages from './MessagesLink'
-import ReelsLink from './ReelsLink'
 
-// Left rail order: Home, Reels, Messages, Search, Notifications, Create, Profile.
+// Left rail order: Home, Messages, Search, Notifications, Create, Profile.
 const SidebarItems = ({authUser,onLogout}) => {
 	return (
 		<>
 			<Home authUser={authUser} onLogout={onLogout} />
-			<ReelsLink />
 			<Messages authUser={authUser} onLogout={onLogout}/>
 			<Search authUser={authUser} onLogout={onLogout}/>
 			<Notifications authUser={authUser} onLogout={onLogout}/>

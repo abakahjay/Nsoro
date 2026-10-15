@@ -28,7 +28,7 @@ export default function GetAppBanner() {
 	};
 
 	return (
-		<Flex display={{ base: "flex", md: "none" }} alignItems='center' gap={3} px={3} py={2} bg='whiteAlpha.100' borderBottom='1px solid' borderColor='whiteAlpha.200'>
+		<Flex display={{ base: "flex", md: "none" }} alignItems='center' gap={3} px={3} py={2} bg='whiteAlpha.100' borderBottom='1px solid' borderColor='nsoro.border'>
 			<CloseButton size='sm' onClick={dismiss} aria-label='Dismiss' />
 			<Image src='/icons/icon-192.png' alt='' w='36px' h='36px' borderRadius='22%' />
 			<Flex direction='column' flex={1} minW={0}>
@@ -39,7 +39,7 @@ export default function GetAppBanner() {
 					Get the app - it&apos;s free
 				</Text>
 			</Flex>
-			<Button as={RouterLink} to='/download' size='sm' colorScheme='blue' borderRadius='lg'>
+			<Button as={RouterLink} to='/download' size='sm' colorScheme='brand' borderRadius='lg'>
 				Get
 			</Button>
 		</Flex>

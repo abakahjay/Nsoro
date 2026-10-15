@@ -13,7 +13,6 @@ import { Flex, Spinner } from "@chakra-ui/react";
 import useShowToast from "./hooks/useShowToast.js";
 import SearchPage from "./pages/Search/Search.jsx";
 import NotificationsPage from "./pages/Notifications/Notifications.jsx";
-import ReelsPage from "./pages/Reels/Reels.jsx";
 import PostPage from "./pages/Post/PostPage.jsx";
 import DownloadPage from "./pages/Download/Download.jsx";
 import SendUpdatePage from "./pages/Admin/SendUpdate.jsx";
@@ -124,12 +123,9 @@ export default function App(){
             ),
         },
         {
+            // Reels were removed - videos are ordinary posts now
             path: '/reels',
-            element: (
-                <PageLayout authUser={authUser} onLogout={handleLogout}>
-                    {authUser ? <ReelsPage /> : <Navigate to="/auth" />}
-                </PageLayout>
-            ),
+            element: <Navigate to="/" replace />,
         },
         {
             // share links - public, anyone with the link can open them

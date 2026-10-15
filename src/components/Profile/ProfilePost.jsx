@@ -13,7 +13,7 @@ import {
 	VStack,
 	useDisclosure,
 } from "@chakra-ui/react";
-import { PiChatCircleFill, PiHeartFill } from "react-icons/pi";
+import { PiChatCircleFill, PiStarFill } from "react-icons/pi";
 import { MdDelete } from "react-icons/md";
 import Comment from "../Comment/Comment";
 import Caption from "../Comment/Caption";
@@ -63,10 +63,10 @@ export default function ProfilePost({post}) {
     <>
         <GridItem
           cursor={"pointer"}
-          borderRadius={4}
+          borderRadius={{ base: "md", md: "xl" }}
           overflow={"hidden"}
           border={"1px solid"}
-          borderColor={"whiteAlpha.300"}
+          borderColor={"nsoro.border"}
           position={"relative"}
           aspectRatio={1 / 1}
           onClick={onOpen}
@@ -85,9 +85,9 @@ export default function ProfilePost({post}) {
             justifyContent={'center'}
           >
             <Flex alignItems={'center'} justifyContent={'center'} gap={50}>
-              {/* likes */}
+              {/* stars */}
               <Flex>
-                <PiHeartFill size={20} />
+                <PiStarFill size={20} color="#f2b705" />
                 <Text fontWeight={"bold"} ml={2}>
                   {post?.likes.length}
                 </Text>
@@ -110,7 +110,7 @@ export default function ProfilePost({post}) {
         <ModalOverlay />
         <ModalContent>
           <ModalCloseButton />
-          <ModalBody bg={"ig.bg"} pb={5}>
+          <ModalBody bg={"nsoro.bg"} pb={5}>
             <Flex
               gap='4'
               direction={{ base: "column", md: "row" }}
@@ -125,7 +125,7 @@ export default function ProfilePost({post}) {
                 borderRadius={4}
                 overflow={"hidden"}
                 border={"1px solid"}
-                borderColor={"whiteAlpha.300"}
+                borderColor={"nsoro.border"}
                 flex={1.5}
                 justifyContent={"center"}
                 alignItems={"center"}

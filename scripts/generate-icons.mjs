@@ -168,8 +168,8 @@ try {
 			<div style="text-align:center;font-size:16px;opacity:.9;margin-top:4px">Share your moments. Shine together.</div>
 			<div style="margin-top:38px;display:grid;gap:22px">
 				${[
-					["Photos, videos &amp; reels", "Post what matters to you"],
-					["Stories that glow", "Moments that last 24 hours"],
+					["Photos &amp; videos", "Post what matters to you"],
+					["Moments that glow", "Share a moment for 24 hours"],
 					["Chat and call friends", "Messages, voice notes and video calls"],
 				]
 					.map(([t, s]) => `<div style="display:flex;gap:14px"><div style="width:12px;height:12px;border-radius:50%;background:${GOLD};margin-top:7px;flex-shrink:0"></div><div><div style="font-weight:700;font-size:18px">${t}</div><div style="font-size:14px;opacity:.85;margin-top:2px">${s}</div></div></div>`)

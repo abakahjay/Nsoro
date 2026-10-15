@@ -20,7 +20,7 @@ export const avatarUrl = (user) => {
 
 // Starts a video, with sound if allowed. Phones (Android Chrome, the installed app,
 // iOS) refuse to start a video WITH sound unless the user just tapped - e.g. the next
-// reel after you've unmuted. Instead of leaving it frozen, play it muted and resolve
+// video after you've unmuted. Instead of leaving it frozen, play it muted and resolve
 // "muted" so the caller can show the unmute button again.
 export const playVideo = async (video) => {
 	if (!video) return "failed";
