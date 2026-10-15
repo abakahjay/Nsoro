@@ -1,4 +1,4 @@
-import { Box, Flex, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Tooltip } from "@chakra-ui/react";
+import { Box, Flex, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Portal, Tooltip } from "@chakra-ui/react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { PiBookmarkSimpleBold } from "react-icons/pi";
@@ -31,7 +31,10 @@ export default function MoreMenu({ authUser, onLogout }) {
 					</Flex>
 				</MenuButton>
 			</Tooltip>
-			<MenuList minW='250px' py={2} borderRadius='xl' boxShadow='dark-lg'>
+			{/* Portal: the sidebar scrolls (overflow auto), which clipped the menu to the
+			    72px rail on tablets */}
+			<Portal>
+			<MenuList minW='250px' py={2} borderRadius='xl' boxShadow='dark-lg' zIndex='popover'>
 				<MenuItem icon={<PiBookmarkSimpleBold size={18} />} as={RouterLink} to={`/${user?.username}?tab=saved`}>
 					Saved
 				</MenuItem>
@@ -59,6 +62,7 @@ export default function MoreMenu({ authUser, onLogout }) {
 				</MenuItem>
 				<MenuItem onClick={() => onLogout(user?._id)}>Log out</MenuItem>
 			</MenuList>
+			</Portal>
 		</Menu>
 	);
 }
