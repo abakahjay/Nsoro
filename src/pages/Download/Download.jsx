@@ -46,7 +46,7 @@ const EXE = {
 const APK = {
 	label: "Download Android app (.apk)",
 	href: "/downloads/Nsoro.apk",
-	size: "1.5 MB",
+	size: "2.3 MB",
 	file: "Nsoro.apk",
 };
 
