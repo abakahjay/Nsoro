@@ -3,7 +3,7 @@
 **Nsoro** (Twi *nsoromma*, "star") is a photo and video social app: posts you can star,
 24-hour Moments, direct messages with voice notes, and voice and video calls.
 
-- Web: https://instagrammmm-z34p.onrender.com
+- Web: https://nsoro-app.onrender.com
 - Install: open `/download` on the site (Android APK, Windows installer, or add to the Home Screen on iPhone/iPad/Mac)
 
 ## Tech

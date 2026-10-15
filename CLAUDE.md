@@ -16,7 +16,8 @@ The product is called **Nsoro**. It must not use Instagram's or Meta's name, log
 - **API paths:** the app calls `/api/v1/nsoro/*`. The backend also still serves `/api/v1/instagram/*` for older installs.
 - **Push app key:** `nsoro`. The backend migrates old `instagram` rows to it.
 - **Repo and folder:** the GitHub repo is `abakahjayy/Nsoro` (renamed from `Instagram`; GitHub redirects the old URLs) and the local folder is `Nsoro`.
-- **Old names kept on purpose:** the Render URL (`instagrammmm-z34p`) and the Android package id `com.instagrammmm.app` (with `assetlinks.json`). Changing them would break links and installed apps.
+- **Site address:** `https://nsoro-app.onrender.com` (Render static site `nsoro-app`). Render can't rename an onrender.com address, so this is a second static site. The old site (`nsoro`, still served at `instagrammmm-z34p.onrender.com`) stays up so old links and the Android app keep working.
+- **Old name kept on purpose:** the Android package id `com.instagrammmm.app` (with `assetlinks.json`). Changing it would break installed apps.
 
 ## Commands
 
@@ -157,7 +158,7 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 - **Messages:** `pages/Messages/Messages.jsx` handles both `/messages` and `/messages/:id`. It is two-pane (inbox plus chat) on tablets and up and one screen at a time on phones, and has a New message search modal.
 - **Unread updates:** `useChat` dispatches a window `inbox:refresh` event after marking a conversation read.
 - **Security:** API calls send the login token through an axios interceptor (`utils/api.js`). Social actions use the backend's logged-in `/api/v1/nsoro/*` routes.
-- **Security headers** (CSP, X-Frame-Options, etc.) are set in Render → nsoro (the static site, formerly "instagrammmm") → Headers. The CSP only allows `fullbackendd.onrender.com` for API, socket and media calls, so a new backend or media host must be added there.
+- **Security headers** (CSP, X-Frame-Options, etc.) are set in Render → nsoro-app (and the old site, nsoro) → Headers. The CSP only allows `fullbackendd.onrender.com` for API, socket and media calls, so a new backend or media host must be added there.
 
  `main.jsx` sets up the Chakra theme (dark mode by default, `nsoro.bg` body background) and registers `/sw.js`. `vite.config.js` also configures `vite-plugin-pwa`.
 

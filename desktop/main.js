@@ -4,7 +4,7 @@
 const { app, BrowserWindow, shell, session, Menu } = require("electron");
 const path = require("path");
 
-const SITE = "https://instagrammmm-z34p.onrender.com";
+const SITE = "https://nsoro-app.onrender.com";
 const START_URL = `${SITE}/?source=desktop`;
 // Google sign-in leaves the site and comes back; these hosts stay in the window.
 const IN_APP_HOSTS = new Set([new URL(SITE).host, "fullbackendd.onrender.com", "accounts.google.com"]);

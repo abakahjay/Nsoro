@@ -26,7 +26,7 @@ import { detectDevice, usePwaInstall } from "../../utils/install";
 import useShowToast from "../../hooks/useShowToast";
 
 // Public address of the site - links shared from here must never be localhost.
-const PUBLIC_SITE = "https://instagrammmm-z34p.onrender.com";
+const PUBLIC_SITE = "https://nsoro-app.onrender.com";
 
 // Two ways to get the app:
 // 1. Install from the browser (PWA). No file download, so no "dangerous download"
