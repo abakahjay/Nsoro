@@ -37,7 +37,7 @@ self.addEventListener('push', (event) => {
     // Everything else always shows, even while the app is open, so it lands in the
     // phone's notification bar and history (and Chrome requires one per push).
     const call = data.call && typeof data.call === 'object' ? data.call : null;
-    await self.registration.showNotification(data.title || 'Nsoro', {
+    const options = {
       body: data.body || '',
       icon: data.icon || '/icons/icon-192.png',
       badge: data.badge || '/icons/icon-192.png',
@@ -54,10 +54,56 @@ self.addEventListener('push', (event) => {
           ]
         : undefined,
       data: { url: data.url || '/', call, ack: data.ack },
-    });
+    };
+    await self.registration.showNotification(data.title || 'Nsoro', options);
     await receipt;
+    if (call && data.ack?.url) await ringUntilAnswered(data.title || 'Nsoro', options, data.ack);
   })());
 });
+
+// A web app can't play a ringtone in the background, so an incoming call "rings" by
+// re-alerting its notification every few seconds (each one plays the phone's
+// notification sound and vibrates) until the call is answered, declined or over -
+// the server says which (POST /push/call-status) - or the app comes to the front.
+const RING_EVERY_MS = 4000;
+const RING_FOR_MS = 35000; // the server gives up on an unanswered call after 35 s
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function ringUntilAnswered(title, options, ack) {
+  const statusUrl = ack.url.replace(/\/ack$/, '/call-status');
+  const until = Date.now() + RING_FOR_MS;
+  while (Date.now() < until) {
+    await sleep(RING_EVERY_MS);
+    // the app is in front: its own call screen is ringing
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    if (windows.some((w) => w.focused)) break;
+    // answered from this notification, or the user swiped it away (a "Missed call"
+    // notification shares the tag but has no call data - that one isn't ours)
+    const isIncoming = (n) => Boolean(n.data?.call);
+    const shown = await self.registration.getNotifications({ tag: options.tag });
+    if (!shown.some(isIncoming)) return;
+    let ringing = false;
+    try {
+      const res = await fetch(statusUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: ack.token }),
+      });
+      ringing = res.ok && (await res.json()).ringing;
+    } catch {
+      ringing = true; // flaky network: keep ringing until the time runs out
+    }
+    if (!ringing || Date.now() >= until) break;
+    // swiped away or answered while we were asking the server: don't bring it back
+    const stillShown = await self.registration.getNotifications({ tag: options.tag });
+    if (!stillShown.some(isIncoming)) return;
+    await self.registration.showNotification(title, options); // renotify: sound + vibration again
+  }
+  // stopped ringing: clear the incoming-call notification (a missed call gets its
+  // own "Missed call" notification, which stays)
+  const left = await self.registration.getNotifications({ tag: options.tag });
+  left.filter((n) => n.data?.call).forEach((n) => n.close());
+}
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();

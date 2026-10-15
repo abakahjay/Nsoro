@@ -116,6 +116,8 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 - **Incoming call with the app open:** the call screen takes over whatever page you're on and rings.
 - **App in the background or closed:** the push is a call notification (`public/push-sw.js`) with `requireInteraction`, a long vibration and **Answer** / **Decline** buttons.
   - The service worker skips that notification when an app window is focused.
+  - **Ringing in the background:** a web app can't loop a ringtone, so `ringUntilAnswered()` in `push-sw.js` re-shows the notification every 4 s (each re-show plays the phone's notification sound and vibrates). It runs for up to 35 s and asks `POST /api/v1/push/call-status` each time whether the call is still ringing. It stops when the call is answered, declined or over, when the notification is swiped away, or when the app comes to the front.
+  - Call pushes have a 35 s TTL, so a phone that was offline never rings for a finished call.
   - Decline posts the ringing receipt to `POST /api/v1/push/call-decline`.
   - Answer focuses the open app and posts `call-answer` to it (`useCallSync` → `answerFromNotification`), or opens `/messages/<caller>?answer=<callId>`, which answers as soon as the call rings in the app.
   - `call.js` closes the call's notification once it's answered, declined or over.
