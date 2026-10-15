@@ -15,6 +15,8 @@
 // public/logo.png                  wordmark on transparent (navbar, sign-in form)
 // public/auth.png                  sign-in page artwork
 // desktop/build/icon.png           Windows app / installer icon (electron-builder)
+// public/icons/tv-banner.png       Android TV home-screen banner (320x180 dp at 2x),
+//                                  copied into the Android app as drawable-xhdpi/tv_banner.png
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -159,6 +161,15 @@ try {
 
 	// Wordmark (navbar, sign-in form): shown ~24px tall, rendered at 2x.
 	render(`<div style="padding:8px">${svgImg(rounded, 0).replace('width="0" height="0"', 'width="56" height="56"').replace("display:block", "display:inline-block;vertical-align:middle")}<span style="font:800 44px 'Segoe UI',Helvetica,Arial,sans-serif;letter-spacing:-1px;color:#f5f5f5;vertical-align:middle;margin-left:14px">Nsoro</span></div>`, 250, 72, "public/logo.png", 2);
+
+	// Android TV banner: mark + wordmark on the green tile, edge to edge.
+	render(
+		`<div style="box-sizing:border-box;width:320px;height:180px;display:flex;align-items:center;justify-content:center;gap:16px;background:radial-gradient(circle at 25% 20%, ${GREEN_LIGHT} 0%, ${GREEN} 50%, ${GREEN_DARK} 100%)">${svgImg(markSvg({ tile: "rounded" }), 88)}<span style="font:800 54px 'Segoe UI',Helvetica,Arial,sans-serif;letter-spacing:-1px;color:#fff">Nsoro</span></div>`,
+		320,
+		180,
+		"public/icons/tv-banner.png",
+		2
+	);
 
 	// Sign-in page artwork.
 	render(

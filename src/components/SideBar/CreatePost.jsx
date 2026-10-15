@@ -65,6 +65,8 @@ const CreatePost = () => {
 					w={{ base: 10, xl: "full" }}
 					justifyContent={{ base: "center", xl: "flex-start" }}
 					onClick={onOpen}
+					role="button"
+					tabIndex={0}
 				>
 					<CreatePostLogo />
 					<Box display={{ base: "none", xl: "block" }}>Create</Box>

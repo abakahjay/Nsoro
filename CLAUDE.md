@@ -99,6 +99,11 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 - **Building the .exe on Windows** fails when unpacking winCodeSign's macOS symlinks without admin rights. Fix it by extracting the archive into the electron-builder cache as `winCodeSign-2.6.0`, ignoring the symlink errors.
 - "Get the app" links: the sidebar, the phone feed banner, the auth page and the suggested-users footer. All are hidden inside the installed app.
 
+**TVs.**
+- `utils/tvRemote.js` (imported once by `main.jsx`) turns on when it detects a TV browser (or `?tv=1` for testing). On a TV the arrow keys move focus to the nearest control in that direction, OK clicks `role="button"` boxes, and a gold outline (`html.tv :focus` in `main.jsx`) shows where focus is. Clickable `Box`/`Flex`/`Text` elements need `role="button"` and `tabIndex={0}` so the remote can reach them.
+- Android TV: from 2.1.0 (versionCode 3) the APK has `android:banner="@drawable/tv_banner"` (from `public/icons/tv-banner.png`), a `LEANBACK_LAUNCHER` category, and touchscreen/leanback marked not required. These (and the call ringing in `DelegationService.java`) were edited by hand into `AndroidManifest.xml`, `DelegationService.java` and `app/build.gradle`, so build with `bubblewrap build` only. `bubblewrap update` regenerates the manifest and would drop them.
+- The Windows app opens maximized on screens 2400px wide or more.
+
 **Sidebar height.** `SideBar.jsx` sets its spacing with CSS variables that shrink at `max-height` 800px and 650px, and it scrolls as a last resort, so "Get the app" and Logout stay reachable on short laptop screens.
 
 **Messages extras.**
@@ -118,7 +123,8 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 - **App in the background or closed:** the push is a call notification (`public/push-sw.js`) with `requireInteraction`, a long vibration and **Answer** / **Decline** buttons.
   - The service worker skips that notification when an app window is focused.
   - **Ringing in the background:** a web app can't loop a ringtone, so `ringUntilAnswered()` in `push-sw.js` re-shows the notification every 4 s (each re-show plays the phone's notification sound and vibrates). It runs for up to 35 s and asks `POST /api/v1/push/call-status` each time whether the call is still ringing. It stops when the call is answered, declined or over, when the notification is swiped away, or when the app comes to the front.
-  - Call pushes have a 35 s TTL, so a phone that was offline never rings for a finished call.
+    - **In the Android app** (from 2.1.0), Android ignores the sound and vibration a website asks for, so `DelegationService.java` in the TWA project spots the incoming-call notification (it has an "Answer…" button) and re-posts it on its own "Incoming calls" channel. That channel uses high importance, the phone's ringtone (ringer volume) and `FLAG_INSISTENT`, so it rings and vibrates continuously until the service worker closes it (or 45 s pass). The "Missed call" notification has no buttons and stays quiet. Keep the "Answer" action titles in `push-sw.js`, because the app matches on them.
+- Call pushes have a 35 s TTL, so a phone that was offline never rings for a finished call.
   - Decline posts the ringing receipt to `POST /api/v1/push/call-decline`.
   - Answer focuses the open app and posts `call-answer` to it (`useCallSync` → `answerFromNotification`), or opens `/messages/<caller>?answer=<callId>`, which answers as soon as the call rings in the app.
   - `call.js` closes the call's notification once it's answered, declined or over.

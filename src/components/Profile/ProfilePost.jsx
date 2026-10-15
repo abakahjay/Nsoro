@@ -70,6 +70,8 @@ export default function ProfilePost({post}) {
           position={"relative"}
           aspectRatio={1 / 1}
           onClick={onOpen}
+          role="button"
+          tabIndex={0}
         >
           <Flex
             opacity={0}

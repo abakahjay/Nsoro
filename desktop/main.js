@@ -1,7 +1,7 @@
 // Nsoro for Windows: a desktop window around the live site, packaged as
 // Nsoro-Setup.exe by electron-builder (see package.json "build").
 // The site does all the work, so a new website deploy updates the app too.
-const { app, BrowserWindow, shell, session, Menu } = require("electron");
+const { app, BrowserWindow, shell, session, Menu, screen } = require("electron");
 const path = require("path");
 
 const SITE = "https://nsoro-app.onrender.com";
@@ -18,11 +18,16 @@ if (!app.requestSingleInstanceLock()) app.quit();
 
 let win;
 function createWindow() {
+	// Fit the screen it opens on: most of a laptop screen, a roomy window on a big
+	// monitor, and full screen on a TV or other huge display.
+	const area = screen.getPrimaryDisplay().workAreaSize;
+	const huge = area.width >= 2400;
 	win = new BrowserWindow({
-		width: 1280,
-		height: 840,
-		minWidth: 380,
-		minHeight: 560,
+		width: Math.min(Math.round(area.width * 0.9), 1600),
+		height: Math.min(Math.round(area.height * 0.9), 1000),
+		minWidth: Math.min(380, area.width),
+		minHeight: Math.min(560, area.height),
+		center: true,
 		title: "Nsoro",
 		backgroundColor: "#000000",
 		icon: path.join(__dirname, "build", "icon.png"),
@@ -30,7 +35,10 @@ function createWindow() {
 		show: false,
 		webPreferences: { contextIsolation: true, sandbox: true },
 	});
-	win.once("ready-to-show", () => win.show());
+	win.once("ready-to-show", () => {
+		if (huge) win.maximize();
+		win.show();
+	});
 	win.loadURL(START_URL);
 
 	const isInApp = (url) => {
@@ -59,7 +67,7 @@ function createWindow() {
 			"data:text/html," +
 				encodeURIComponent(`<body style="background:#000;color:#fff;font-family:Segoe UI,sans-serif;display:grid;place-items:center;height:100vh;margin:0">
 <div style="text-align:center"><h2>Can't reach Nsoro</h2><p style="color:#aaa">Check your internet connection.</p>
-<button onclick="location.href='${START_URL}'" style="background:#0095f6;color:#fff;border:0;border-radius:8px;padding:10px 18px;font-size:15px;cursor:pointer">Try again</button></div></body>`)
+<button onclick="location.href='${START_URL}'" style="background:#0a7a4b;color:#fff;border:0;border-radius:8px;padding:10px 18px;font-size:15px;cursor:pointer">Try again</button></div></body>`)
 		);
 	});
 }

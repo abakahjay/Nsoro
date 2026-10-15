@@ -34,7 +34,7 @@ export function AuthForm({onAuth}){
                     <Box mx={2} fontSize={14}>
                         {isLogin ? "Don't have an account?" : "Already have an account?"}
                     </Box>
-                    <Box onClick={() => setIsLogin(!isLogin)} color={"brand.400"} cursor={"pointer"}>
+                    <Box role="button" tabIndex={0} onClick={() => setIsLogin(!isLogin)} color={"brand.400"} cursor={"pointer"}>
                         {isLogin ? "Sign up" : "Log in"}
                     </Box>
                 </Flex>

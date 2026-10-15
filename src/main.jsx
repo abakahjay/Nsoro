@@ -8,6 +8,7 @@ import { mode } from "@chakra-ui/theme-tools";
 // import { BrowserRouter } from "react-router-dom";
 import { consumeGoogleLoginToken } from './utils/auth';
 import './utils/install'; // must load early to catch the browser's one-time install prompt
+import './utils/tvRemote'; // arrow keys / OK move around the app on a TV
 
 consumeGoogleLoginToken();
 
@@ -75,6 +76,8 @@ const styles = {
     },
     // Chakra draws avatar photos as circles; follow the rounded-square frame instead.
     ".chakra-avatar__img": { borderRadius: "inherit" },
+    // On a TV (utils/tvRemote.js) the remote's position is a gold outline.
+    "html.tv :focus": { outline: "3px solid #f2b705", outlineOffset: "2px" },
   }),
 };
 

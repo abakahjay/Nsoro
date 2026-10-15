@@ -21,6 +21,8 @@ export default function PostGrid({ posts, emptyText = "No posts yet." }) {
 						borderRadius={{ base: "md", md: "xl" }}
 						cursor='pointer'
 						onClick={() => setOpenPost(post)}
+						role='button'
+						tabIndex={0}
 						_hover={{ opacity: 0.85 }}
 					>
 						<PostMedia post={post} variant='thumb' />

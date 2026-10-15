@@ -29,7 +29,7 @@ const GoogleAuth = ({ prefix }) => {
 	};
 
 	return (
-		<Flex alignItems={"center"} justifyContent={"center"} cursor={"pointer"} onClick={handleGoogleAuth}>
+		<Flex role="button" tabIndex={0} alignItems={"center"} justifyContent={"center"} cursor={"pointer"} onClick={handleGoogleAuth}>
 			<Image src='/google.png' w={5} alt='Google logo' />
 			<Text mx='2' color={"brand.400"}>
 				{prefix} with Google
