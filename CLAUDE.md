@@ -147,7 +147,7 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 - **Messages:** `pages/Messages/Messages.jsx` handles both `/messages` and `/messages/:id`. It is two-pane (inbox plus chat) on tablets and up and one screen at a time on phones, and has a New message search modal.
 - **Unread updates:** `useChat` dispatches a window `inbox:refresh` event after marking a conversation read.
 - **Security:** API calls send the login token through an axios interceptor (`utils/api.js`). Social actions use the backend's logged-in `/api/v1/nsoro/*` routes.
-- **Security headers** (CSP, X-Frame-Options, etc.) are set in Render → instagrammmm → Headers. The CSP only allows `fullbackendd.onrender.com` for API, socket and media calls, so a new backend or media host must be added there.
+- **Security headers** (CSP, X-Frame-Options, etc.) are set in Render → nsoro (the static site, formerly "instagrammmm") → Headers. The CSP only allows `fullbackendd.onrender.com` for API, socket and media calls, so a new backend or media host must be added there.
 
  `main.jsx` sets up the Chakra theme (dark mode by default, `nsoro.bg` body background) and registers `/sw.js`. `vite.config.js` also configures `vite-plugin-pwa`.
 
