@@ -7,7 +7,6 @@ const useLogout = () => {
     const showToast = useShowToast(); // Show toast notifications
     const logoutUser = useAuthStore((state) => state.logoutUser); // Zustand store action for login
     const setError = useAuthStore((state) => state.setError); // Zustand action to handle errors
-    const setLoading = useAuthStore((state) => state.setLoading); // Zustand action to manage loading state
     const isLoading = useAuthStore((state) => state.isLoading); // Zustand loading state
     const error = useAuthStore((state) => state.error); // Zustand error state
 
@@ -18,28 +17,16 @@ const useLogout = () => {
         if (!userId) {
             return showToast("Error", "You are not authorized to logout this user", "error");
         }
-        setLoading(true); // Set loading state to true
-        try {
-            // Send login request to the backend
-            const response = await API.post(`/api/v1/auth/logout?userId=${userId}`);
-
-            const userData = response.data;
-            console.log(userData)
-
-            // Save user info to Zustand and local storage
-            closeSocket(); // the socket is authenticated as this user
-            logoutUser(); // Update Zustand state
-            setAuthUser(null);
-            setError(null)
-            const message = response?.data?.message || "Logout successful";
-            showToast("Success", message, "success");
-        } catch (err) {
-            const message = err.response?.data?.error || "Logout failed";
-            setError(message); // Update Zustand error state
-            showToast("Error", message, "error");
-        } finally {
-            setLoading(false); // Reset loading state
-        }
+        // Logging out is local: the token lives only on this device, and the server's
+        // /logout just clears a cookie. So sign out here first and tell the server after;
+        // a slow or failed request (Render waking up, a weak phone signal) used to leave
+        // you signed in with a "Logout failed" error.
+        closeSocket(); // the socket is authenticated as this user
+        logoutUser(); // clears localStorage and the store
+        setAuthUser(null);
+        setError(null);
+        showToast("Success", "You're logged out", "success");
+        API.post(`/api/v1/auth/logout?userId=${userId}`).catch(() => {});
     };
 
     return { logout, isLoading, error };

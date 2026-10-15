@@ -10,12 +10,15 @@ const useFollowUser = (userId) => {
 	const setAuthUser = useAuthStore((state) => state.setAuthUser);
 	const { userProfile, setUserProfile } = useProfileStore();
 	const showToast = useShowToast();
-    const user=authUser.user?authUser.user:authUser
+    // null when logged out: profiles and post links stay viewable, and this hook runs
+    // on them (logging out from your own profile used to crash the page here)
+    const user=authUser?.user?authUser.user:authUser
     const showingThisProfile = String(userProfile?.user?._id) === String(userId)
     // authUser._id&&console.log(authUser?._id)
     // console.log(userId)
-    
+
 	const handleFollowUser = async () => {
+        if (!user) return showToast("Error", "You must be logged in to follow someone", "error");
         setIsUpdating(true);
 		try {
             
@@ -64,13 +67,12 @@ const useFollowUser = (userId) => {
 	};
 
 	useEffect(() => {
-		if (authUser) {
-			const isFollowing =user.following? user.following.includes(userId):authUser.user.following.includes(userId);
-			setIsFollowing(isFollowing);
+		if (user) {
+			setIsFollowing(Boolean(user.following?.includes(userId)));
             // console.log(userProfile)
             // console.log(authUser)
 		}
-	}, [authUser, userId]);
+	}, [user, userId]);
 
 	return { isUpdating, isFollowing, handleFollowUser };
 };
