@@ -48,30 +48,72 @@ const mediaError = (error, kind) => {
 };
 
 // ---- ringing sounds (WebAudio, so there's no audio file to ship) ----
+// Gentle on purpose:
+//   ringback (you're calling): a soft, low two-note "toot" that fades in and out,
+//            once every 3 s - like a phone line ringing far away.
+//   ring (someone's calling you): a light marimba phrase E5 G5 C6 G5, then a pause.
+const NOTE = { E5: 659.25, G5: 783.99, C6: 1046.5, A4: 440, Cs5: 554.37 };
 let tone = null;
+
+// One mallet hit: a sine plus a quiet octave overtone, quick attack, natural decay.
+const mallet = (ctx, out, freq, at, length = 0.9, volume = 0.22) => {
+	[
+		[freq, volume],
+		[freq * 2, volume * 0.18],
+	].forEach(([f, v]) => {
+		const osc = ctx.createOscillator();
+		const gain = ctx.createGain();
+		osc.type = "sine";
+		osc.frequency.value = f;
+		gain.gain.setValueAtTime(0.0001, at);
+		gain.gain.exponentialRampToValueAtTime(v, at + 0.012);
+		gain.gain.exponentialRampToValueAtTime(0.0001, at + length);
+		osc.connect(gain).connect(out);
+		osc.start(at);
+		osc.stop(at + length + 0.05);
+	});
+};
+
+// A soft swell: fades in, holds, fades out (no clicks, no harsh edges).
+const swell = (ctx, out, freqs, at, length, volume) => {
+	freqs.forEach((f) => {
+		const osc = ctx.createOscillator();
+		const gain = ctx.createGain();
+		osc.type = "sine";
+		osc.frequency.value = f;
+		gain.gain.setValueAtTime(0.0001, at);
+		gain.gain.linearRampToValueAtTime(volume, at + 0.12);
+		gain.gain.setValueAtTime(volume, at + length - 0.25);
+		gain.gain.linearRampToValueAtTime(0.0001, at + length);
+		osc.connect(gain).connect(out);
+		osc.start(at);
+		osc.stop(at + length + 0.05);
+	});
+};
+
 const startTone = (type) => {
 	stopTone();
 	try {
 		const ctx = new (window.AudioContext || window.webkitAudioContext)();
+		ctx.resume?.().catch(() => {});
+		// a gentle low-pass takes the edge off on phone speakers
+		const out = ctx.createBiquadFilter();
+		out.type = "lowpass";
+		out.frequency.value = 3200;
+		out.connect(ctx.destination);
 		const ring = type === "ring";
-		const beep = () => {
-			const now = ctx.currentTime;
-			[0, ring ? 0.25 : null].filter((t) => t !== null).forEach((offset) => {
-				const osc = ctx.createOscillator();
-				const gain = ctx.createGain();
-				const len = ring ? 0.2 : 1;
-				osc.frequency.value = ring ? 880 : 425;
-				gain.gain.setValueAtTime(0.0001, now + offset);
-				gain.gain.exponentialRampToValueAtTime(0.12, now + offset + 0.02);
-				gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + len);
-				osc.connect(gain).connect(ctx.destination);
-				osc.start(now + offset);
-				osc.stop(now + offset + len);
-			});
-			if (ring) navigator.vibrate?.([300, 150, 300]);
+
+		const play = () => {
+			const t = ctx.currentTime + 0.05;
+			if (ring) {
+				[NOTE.E5, NOTE.G5, NOTE.C6, NOTE.G5].forEach((f, i) => mallet(ctx, out, f, t + i * 0.17, i === 3 ? 1.1 : 0.7));
+				navigator.vibrate?.([400, 200, 400]);
+			} else {
+				swell(ctx, out, [NOTE.A4, NOTE.Cs5], t, 1.1, 0.045);
+			}
 		};
-		beep();
-		tone = { ctx, id: setInterval(beep, ring ? 1600 : 3000) };
+		play();
+		tone = { ctx, id: setInterval(play, ring ? 2400 : 3000) };
 	} catch {
 		// no audio output available - the call still works
 	}
@@ -109,8 +151,41 @@ const END_TEXT = {
 	missed: "Missed call",
 };
 
+// The "Incoming call" notification on this device goes away once the call is
+// answered, declined or over.
+const clearCallNotification = (callId) => {
+	if (!callId || !navigator.serviceWorker?.getRegistration) return;
+	navigator.serviceWorker
+		.getRegistration()
+		.then((reg) => reg?.getNotifications({ tag: `ig-call-${callId}` }))
+		.then((list) => list?.forEach((n) => n.close()))
+		.catch(() => {});
+};
+
+// Set when the app was opened by tapping "Answer" on a call notification
+// (/messages/<caller>?answer=<callId>): answer as soon as that call rings here.
+let answerWhenRinging = null;
+try {
+	const params = new URLSearchParams(window.location.search);
+	answerWhenRinging = params.get("answer");
+	if (answerWhenRinging) {
+		params.delete("answer");
+		const query = params.toString();
+		window.history.replaceState(null, "", window.location.pathname + (query ? `?${query}` : ""));
+	}
+} catch {
+	// no window (tests) - nothing to do
+}
+
+// "Answer" tapped while the app was already open in the background.
+export const answerFromNotification = (callId) => {
+	if (store().status === "incoming" && store().callId === callId) acceptCall();
+	else answerWhenRinging = callId;
+};
+
 const finish = (reason, message) => {
 	const wasRinging = store().status === "incoming";
+	clearCallNotification(store().callId);
 	stopTone();
 	pc?.close();
 	pc = null;
@@ -166,6 +241,7 @@ export const acceptCall = async () => {
 		return null;
 	}
 	store().set({ status: "connecting", localStream });
+	clearCallNotification(callId);
 	createPeer(callId, localStream); // ready before the caller's offer arrives
 	socket()
 		?.timeout(10000)
@@ -214,6 +290,10 @@ export const bindCallEvents = (s) => {
 		store().set({ status: "incoming", callId: invite.callId, kind: invite.kind, peer: { ...invite.caller, _id: invite.from } });
 		startTone("ring");
 		s.emit("call:ringing", { callId: invite.callId }); // caller's screen: "Ringing…"
+		if (answerWhenRinging === invite.callId) {
+			answerWhenRinging = null;
+			acceptCall();
+		}
 	};
 
 	// Their phone has the call - in the app, or as a notification while it's closed.

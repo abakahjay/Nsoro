@@ -112,6 +112,14 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 - `hooks/useCallSync.js` (mounted by PageLayout) binds the socket events. `components/Call/CallScreen.jsx` is the full-screen UI, also mounted in PageLayout so a call survives navigation.
 - Signaling is FullBackendd `utils/socket.js`: `call:invite` / `incoming` / `accept` / `accepted` / `decline` / `end` / `ended` / `signal`. Calls ring for 35 s.
 - When a call ends, the server saves a `type: 'call'` message (`callKind`, `callStatus`, `duration`) that shows in the chat and inbox.
+- **Tones** are synthesized in `utils/call.js` (no audio files). They are original sounds, not copies of another app's: the ringback is a soft low swell every 3 s, and the incoming ring is a marimba phrase (E5 G5 C6 G5) every 2.4 s plus vibration.
+- **Incoming call with the app open:** the call screen takes over whatever page you're on and rings.
+- **App in the background or closed:** the push is a call notification (`public/push-sw.js`) with `requireInteraction`, a long vibration and **Answer** / **Decline** buttons.
+  - The service worker skips that notification when an app window is focused.
+  - Decline posts the ringing receipt to `POST /api/v1/push/call-decline`.
+  - Answer focuses the open app and posts `call-answer` to it (`useCallSync` → `answerFromNotification`), or opens `/messages/<caller>?answer=<callId>`, which answers as soon as the call rings in the app.
+  - `call.js` closes the call's notification once it's answered, declined or over.
+- **Missed calls** are added to the Notifications list (`type: 'call'`, text `audio`/`video`) with a call-back button.
 - The caller sees "Calling…" until the callee's device confirms, then "Ringing…". The open app confirms with `call:ringing`; with the app closed, the service worker posts the push receipt.
 - Only public STUN is configured. Callers behind strict NATs need a TURN server via `VITE_TURN_URL`, `VITE_TURN_USERNAME` and `VITE_TURN_CREDENTIAL`.
 

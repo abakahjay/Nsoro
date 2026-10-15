@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { Avatar, Box, Flex, Heading, Image, Link, Skeleton, SkeletonCircle, Text, VStack } from "@chakra-ui/react";
+import { Avatar, Box, Flex, Heading, IconButton, Image, Link, Skeleton, SkeletonCircle, Text, VStack } from "@chakra-ui/react";
+import { PiPhoneBold, PiVideoCameraBold } from "react-icons/pi";
 import { Link as RouterLink } from "react-router-dom";
 import useNotificationStore from "../../store/useNotificationStore";
 import { useMarkNotificationsRead } from "../../hooks/useNotifications";
@@ -9,6 +10,7 @@ import { timeAgo } from "../../utils/timeAgo";
 const describe = (n) => {
 	if (n.type === "like") return "starred your post.";
 	if (n.type === "follow") return "started following you.";
+	if (n.type === "call") return n.text === "video" ? "missed video call." : "missed voice call.";
 	return `commented: ${n.text}`;
 };
 
@@ -79,6 +81,17 @@ export default function NotificationsPage() {
 									</Text>
 								</Text>
 								{n.post && <PostThumb post={n.post} />}
+								{n.type === "call" && (
+									<IconButton
+										as={RouterLink}
+										to={`/messages/${n.actor._id}`}
+										aria-label={`Call ${n.actor.username} back`}
+										icon={n.text === "video" ? <PiVideoCameraBold /> : <PiPhoneBold />}
+										size='sm'
+										borderRadius='xl'
+										colorScheme='brand'
+									/>
+								)}
 							</Flex>
 						))}
 					</VStack>
