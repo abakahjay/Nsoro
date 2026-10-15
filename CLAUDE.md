@@ -153,9 +153,7 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 
 ## Dead or legacy code
 
-- `src/firebase/firebase.js` is imported nowhere, and `firebase` is not a declared dependency.
 - `src/components/trys/` holds experiments. `PageLayout` imports `Footer.jsx` but never renders it.
-- `README.md` contains an unresolved git merge conflict.
 
 ## Device notifications (Web Push)
 
