@@ -15,7 +15,8 @@ The product is called **Nsoro**. It must not use Instagram's or Meta's name, log
 - **UI icons:** Phosphor (`react-icons/pi`), wrapped in `src/assets/constants.jsx`. Use a bell for activity, two bubbles for messages and a star for liking. Never copy Instagram's SVGs.
 - **API paths:** the app calls `/api/v1/nsoro/*`. The backend also still serves `/api/v1/instagram/*` for older installs.
 - **Push app key:** `nsoro`. The backend migrates old `instagram` rows to it.
-- **Old names kept on purpose:** the GitHub repo name, the Render URL (`instagrammmm-z34p`) and the Android package id `com.instagrammmm.app` (with `assetlinks.json`). Changing them would break links and installed apps.
+- **Repo and folder:** the GitHub repo is `abakahjayy/Nsoro` (renamed from `Instagram`; GitHub redirects the old URLs) and the local folder is `Nsoro`.
+- **Old names kept on purpose:** the Render URL (`instagrammmm-z34p`) and the Android package id `com.instagrammmm.app` (with `assetlinks.json`). Changing them would break links and installed apps.
 
 ## Commands
 
@@ -91,7 +92,7 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 **Installable app / downloads.**
 - The `/download` page detects the device and puts that device's option first.
 - **Android:** a signed Trusted Web Activity APK (`com.instagrammmm.app`) at `public/downloads/Nsoro.apk`, made with PWABuilder's packaging service. The app inside still shows the old name and icon until it is rebuilt with the same signing key. `public/.well-known/assetlinks.json` must match the signing key. The key lives in Desktop\Other\"Instagram App Packages" on the owner's PC and is never committed.
-- **Windows:** `Nsoro-Setup.exe` (appId `com.nsoro.app`) is built from `desktop/` (Electron + electron-builder NSIS; `npm run dist`) and published as a GitHub Release asset on abakahjayy/Instagram. The page links to `/releases/latest/download/Nsoro-Setup.exe`. The app window loads the live site and uses a plain Chrome user agent, because Google blocks sign-in from "Electron".
+- **Windows:** `Nsoro-Setup.exe` (appId `com.nsoro.app`) is built from `desktop/` (Electron + electron-builder NSIS; `npm run dist`) and published as a GitHub Release asset on abakahjayy/Nsoro. The page links to `/releases/latest/download/Nsoro-Setup.exe`. The app window loads the live site and uses a plain Chrome user agent, because Google blocks sign-in from "Electron".
 - **iPhone, iPad and Mac:** installed from the browser as a PWA. The manifest is in `vite.config.js`, the icons come from `scripts/generate-icons.mjs`, and `utils/install.js` catches `beforeinstallprompt` for the "install from this browser" button.
 - Links on the page use the public site address, never `window.location` (it showed localhost during local runs).
 - **Building the .exe on Windows** fails when unpacking winCodeSign's macOS symlinks without admin rights. Fix it by extracting the archive into the electron-builder cache as `winCodeSign-2.6.0`, ignoring the symlink errors.
