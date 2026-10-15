@@ -7,6 +7,10 @@ import { enablePush, getPushState } from "../../utils/push";
 // Opens by itself after sign-in when this device hasn't decided about notifications
 // yet. Browsers only show their own "Allow notifications?" popup after a tap, so
 // "Allow" here is that tap. "Not now" asks again in 3 days.
+// iPhone/iPad in Safari can't get notifications until Nsoro is on the Home Screen,
+// so they get a "add it to your Home Screen" version instead.
+// Notifications are also what gives a sender two ticks while this phone's app is
+// closed (the push's delivery receipt), so it's worth asking.
 const SNOOZE_KEY = "nsoro-push-prompt-snoozed";
 const SNOOZE_MS = 3 * 24 * 3600 * 1000;
 
@@ -22,14 +26,22 @@ export default function NotificationPrompt() {
 	const showToast = useShowToast();
 	const [open, setOpen] = useState(false);
 	const [busy, setBusy] = useState(false);
+	const [installFirst, setInstallFirst] = useState(false);
 
 	useEffect(() => {
 		let cancelled = false;
 		// Let the page settle first so the prompt doesn't flash during sign-in.
 		const timer = setTimeout(async () => {
-			if (snoozed() || typeof Notification === "undefined" || Notification.permission !== "default") return;
+			if (snoozed()) return;
 			const state = await getPushState().catch(() => "unsupported");
-			if (!cancelled && state === "off") setOpen(true);
+			if (cancelled) return;
+			if (state === "install-first") {
+				setInstallFirst(true);
+				setOpen(true);
+				return;
+			}
+			if (typeof Notification === "undefined" || Notification.permission !== "default") return;
+			if (state === "off") setOpen(true);
 		}, 1500);
 		return () => {
 			cancelled = true;
@@ -68,11 +80,26 @@ export default function NotificationPrompt() {
 						<Flex w='64px' h='64px' borderRadius='full' bg='linear-gradient(45deg, #f2b705, #2f9e44, #0a7a4b)' alignItems='center' justifyContent='center'>
 							<FiBell size={30} color='white' />
 						</Flex>
-						<Text fontWeight='bold' fontSize='lg'>Turn on notifications</Text>
-						<Text color='gray.400' fontSize='sm'>
-							Get sign-in alerts, messages, stars, comments and new followers in your notification bar, even when Nsoro is closed.
-						</Text>
-						<Button colorScheme='green' w='full' onClick={allow} isLoading={busy}>Allow</Button>
+						{installFirst ? (
+							<>
+								<Text fontWeight='bold' fontSize='lg'>Get messages and calls when Nsoro is closed</Text>
+								<Text color='nsoro.secondary' fontSize='sm'>
+									On iPhone and iPad, tap Share, then &ldquo;Add to Home Screen&rdquo;. Open Nsoro from your Home Screen and allow notifications &ndash; then calls ring and friends see two ticks when their messages reach you.
+								</Text>
+								{/* a plain link: this prompt is mounted outside the router (App.jsx) */}
+								<Button as='a' href='/download' colorScheme='brand' w='full' onClick={later}>
+									Show me how
+								</Button>
+							</>
+						) : (
+							<>
+								<Text fontWeight='bold' fontSize='lg'>Turn on notifications</Text>
+								<Text color='nsoro.secondary' fontSize='sm'>
+									Get messages, calls, stars, comments and new followers in your notification bar, even when Nsoro is closed &ndash; and friends see two ticks when their messages reach your phone.
+								</Text>
+								<Button colorScheme='brand' w='full' onClick={allow} isLoading={busy}>Allow</Button>
+							</>
+						)}
 						<Button variant='ghost' w='full' size='sm' onClick={later} isDisabled={busy}>Not now</Button>
 					</VStack>
 				</ModalBody>
