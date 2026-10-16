@@ -48,11 +48,11 @@ const mediaError = (error, kind) => {
 };
 
 // ---- ringing sounds (WebAudio, so there's no audio file to ship) ----
-// Gentle on purpose:
-//   ringback (you're calling): a soft, low two-note "toot" that fades in and out,
-//            once every 3 s - like a phone line ringing far away.
-//   ring (someone's calling you): a light marimba phrase E5 G5 C6 G5, then a pause.
-const NOTE = { E5: 659.25, G5: 783.99, C6: 1046.5, A4: 440, Cs5: 554.37 };
+//   ringback (you're calling): the classic phone-line double ring, "brr-brr",
+//            400 + 450 Hz, 0.4 s on, 0.2 s off, 0.4 s on, then 2 s of silence.
+//   ring (someone's calling you): an original bright pluck pattern, two quick
+//            rising phrases (A5 C#6 E6, then B5 E6 G#6), then a pause.
+const NOTE = { A5: 880, B5: 987.77, Cs6: 1108.73, E6: 1318.51, Gs6: 1661.22 };
 let tone = null;
 
 // One mallet hit: a sine plus a quiet octave overtone, quick attack, natural decay.
@@ -74,16 +74,16 @@ const mallet = (ctx, out, freq, at, length = 0.9, volume = 0.22) => {
 	});
 };
 
-// A soft swell: fades in, holds, fades out (no clicks, no harsh edges).
-const swell = (ctx, out, freqs, at, length, volume) => {
+// A steady tone burst with short fades so it doesn't click.
+const burst = (ctx, out, freqs, at, length, volume, fade = 0.02) => {
 	freqs.forEach((f) => {
 		const osc = ctx.createOscillator();
 		const gain = ctx.createGain();
 		osc.type = "sine";
 		osc.frequency.value = f;
 		gain.gain.setValueAtTime(0.0001, at);
-		gain.gain.linearRampToValueAtTime(volume, at + 0.12);
-		gain.gain.setValueAtTime(volume, at + length - 0.25);
+		gain.gain.linearRampToValueAtTime(volume, at + fade);
+		gain.gain.setValueAtTime(volume, at + length - fade);
 		gain.gain.linearRampToValueAtTime(0.0001, at + length);
 		osc.connect(gain).connect(out);
 		osc.start(at);
@@ -106,14 +106,16 @@ const startTone = (type) => {
 		const play = () => {
 			const t = ctx.currentTime + 0.05;
 			if (ring) {
-				[NOTE.E5, NOTE.G5, NOTE.C6, NOTE.G5].forEach((f, i) => mallet(ctx, out, f, t + i * 0.17, i === 3 ? 1.1 : 0.7));
-				navigator.vibrate?.([400, 200, 400]);
+				[NOTE.A5, NOTE.Cs6, NOTE.E6].forEach((f, i) => mallet(ctx, out, f, t + i * 0.11, 0.45, 0.2));
+				[NOTE.B5, NOTE.E6, NOTE.Gs6].forEach((f, i) => mallet(ctx, out, f, t + 0.5 + i * 0.11, i === 2 ? 0.9 : 0.45, 0.2));
+				navigator.vibrate?.([500, 300, 500]);
 			} else {
-				swell(ctx, out, [NOTE.A4, NOTE.Cs5], t, 1.1, 0.045);
+				burst(ctx, out, [400, 450], t, 0.4, 0.05);
+				burst(ctx, out, [400, 450], t + 0.6, 0.4, 0.05);
 			}
 		};
 		play();
-		tone = { ctx, id: setInterval(play, ring ? 2400 : 3000) };
+		tone = { ctx, id: setInterval(play, ring ? 2600 : 3000) };
 	} catch {
 		// no audio output available - the call still works
 	}
