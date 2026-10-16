@@ -38,7 +38,7 @@ const PUBLIC_SITE = "https://nsoro-app.onrender.com";
 //    public/downloads (targets Android 16, runs on Android 5 and newer).
 const EXE = {
 	label: "Download installer (.exe)",
-	href: "https://github.com/abakahjayy/Nsoro/releases/latest/download/Nsoro-Setup.exe",
+	href: "https://github.com/abakahjay/Nsoro/releases/latest/download/Nsoro-Setup.exe",
 	size: "78 MB",
 	file: "Nsoro-Setup.exe",
 };
@@ -307,7 +307,7 @@ export default function DownloadPage() {
 				</Button>
 				<Text color='gray.500' fontSize='xs' textAlign='center'>
 					Installer files are also on{" "}
-					<Link href='https://github.com/abakahjayy/Nsoro/releases/latest' isExternal color='gold.400'>
+					<Link href='https://github.com/abakahjay/Nsoro/releases/latest' isExternal color='gold.400'>
 						the releases page
 					</Link>
 					.
