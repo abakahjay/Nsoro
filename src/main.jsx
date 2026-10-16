@@ -7,10 +7,12 @@ import { extendTheme, theme as baseTheme } from "@chakra-ui/react";
 import { mode } from "@chakra-ui/theme-tools";
 // import { BrowserRouter } from "react-router-dom";
 import { consumeGoogleLoginToken } from './utils/auth';
+import { captureAppVersion } from './utils/appVersion';
 import './utils/install'; // must load early to catch the browser's one-time install prompt
 import './utils/tvRemote'; // arrow keys / OK move around the app on a TV
 
 consumeGoogleLoginToken();
+captureAppVersion(); // the Android app opens us with ?app_version= (in-app updates)
 
 //We can also import React and ReactDOM from the modules above without the curly braises
 if ('serviceWorker' in navigator) {

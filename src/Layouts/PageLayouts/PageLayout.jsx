@@ -10,6 +10,7 @@ import { useNotificationsSync } from "../../hooks/useNotifications.js";
 import { useInboxSync } from "../../hooks/useInboxSync.js";
 import CallScreen from "../../components/Call/CallScreen.jsx";
 import { useCallSync } from "../../hooks/useCallSync.js";
+import AppBanners from "../../components/AppBanners/AppBanners.jsx";
 
 const PageLayout = ({ authUser, onLogout, children }) => {
     const {isLoading } = useAuthStore()
@@ -45,6 +46,8 @@ const PageLayout = ({ authUser, onLogout, children }) => {
                 </Box>
                 {showMobileBars && <MobileBottomNav authUser={authUser} onLogout={onLogout} />}
                 {canRenderSidebar && <CallScreen />}
+                {/* Android app only: "Update available" and the one-time call setup */}
+                <AppBanners />
 
                 {/* Portfolio badge - this is a clone/demo project */}
                 <Link

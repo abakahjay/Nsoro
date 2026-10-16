@@ -1,8 +1,10 @@
 // Nsoro for Windows: a desktop window around the live site, packaged as
 // Nsoro-Setup.exe by electron-builder (see package.json "build").
 // The site does all the work, so a new website deploy updates the app too.
-const { app, BrowserWindow, shell, session, Menu, screen } = require("electron");
+const { app, BrowserWindow, shell, session, Menu, screen, dialog, net } = require("electron");
 const path = require("path");
+const fs = require("fs");
+const { spawn } = require("child_process");
 
 const SITE = "https://nsoro-app.onrender.com";
 const START_URL = `${SITE}/?source=desktop`;
@@ -72,6 +74,70 @@ function createWindow() {
 	});
 }
 
+// ---- in-app update ----
+// On start, compare this app's version with /downloads/version.json on the site.
+// Only when it lists a newer Windows version: ask, download the new installer
+// (progress on the taskbar icon), run it and quit; the one-click installer
+// replaces this version and opens the new one.
+const VERSION_URL = `${SITE}/downloads/version.json`;
+const newer = (a, b) => {
+	const x = String(a).split(".").map(Number);
+	const y = String(b).split(".").map(Number);
+	for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0);
+	return false;
+};
+
+async function checkForUpdate() {
+	let latest;
+	try {
+		const res = await net.fetch(VERSION_URL, { cache: "no-store" });
+		latest = (await res.json()).windows;
+	} catch {
+		return; // offline: try next time
+	}
+	if (!latest?.version || !latest.url || !newer(latest.version, app.getVersion())) return;
+	const { response } = await dialog.showMessageBox(win, {
+		type: "info",
+		buttons: ["Update now", "Later"],
+		defaultId: 0,
+		cancelId: 1,
+		title: "Update available",
+		message: `Nsoro ${latest.version} is available`,
+		detail: `You have ${app.getVersion()}. The update takes a minute; Nsoro reopens when it's done.`,
+	});
+	if (response !== 0) return;
+	try {
+		const file = path.join(app.getPath("temp"), `Nsoro-Setup-${latest.version}.exe`);
+		const res = await net.fetch(latest.url); // GitHub redirects to the release file
+		if (!res.ok) throw new Error(`HTTP ${res.status}`);
+		const total = Number(res.headers.get("content-length")) || 0;
+		const out = fs.createWriteStream(file);
+		const reader = res.body.getReader();
+		let done = 0;
+		for (;;) {
+			const { done: finished, value } = await reader.read();
+			if (finished) break;
+			out.write(Buffer.from(value));
+			done += value.length;
+			if (total && win) win.setProgressBar(done / total);
+		}
+		await new Promise((resolve, reject) => out.end((err) => (err ? reject(err) : resolve())));
+		if (win) win.setProgressBar(-1);
+		spawn(file, [], { detached: true, stdio: "ignore" }).unref();
+		app.quit();
+	} catch (error) {
+		if (win) win.setProgressBar(-1);
+		dialog.showMessageBox(win, {
+			type: "warning",
+			title: "Update failed",
+			message: "The update couldn't be downloaded.",
+			detail: `Check your connection and reopen Nsoro to try again, or download it from ${SITE}/download.
+
+${error.message}`,
+		});
+	}
+}
+
 app.on("second-instance", () => {
 	if (!win) return;
 	if (win.isMinimized()) win.restore();
@@ -86,6 +152,7 @@ app.whenReady().then(() => {
 		callback(allowed.includes(permission) && wc.getURL().startsWith(SITE));
 	});
 	createWindow();
+	win.webContents.once("did-finish-load", () => checkForUpdate());
 });
 
 app.on("window-all-closed", () => app.quit());
