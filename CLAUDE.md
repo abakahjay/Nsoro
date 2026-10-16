@@ -117,6 +117,15 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 - The chat groups messages by day under sticky "Today" / "Yesterday" / weekday / date headers (`utils/chatDates.js`). Tapping a message shows its full sent time.
 - `useChat` and `useInboxSync` treat the open chat as read immediately, and `useChat` fires `inbox:refresh` after your own send, edit or unsend. The server never echoes your own messages back to the tab that sent them.
 
+**End-to-end encryption (messages and voice notes).**
+- `utils/e2e.js` (WebCrypto only). Each device has its own ECDH P-256 key pair. The private key is non-extractable and kept in IndexedDB (`nsoro-e2e`, one entry per account). The public key is registered with `PUT /api/v1/messages/keys` (by `useInboxSync` on sign-in and by `useChat`). `GET /api/v1/messages/keys/:userId` lists a user's devices, at most 10, and the least recently used are dropped.
+- Sending: a fresh AES-256-GCM key encrypts the text (or the voice note's audio blob). It's wrapped with AES-KW, using a key from HKDF(ECDH(sender device, target device)), for every device of the recipient **and** of the sender. The envelope `{ v:1, sd, spk, iv, ct, keys:[{d,k}], mime? }` goes in `Message.e2e`, and `message` stays empty. Encrypted voice notes are uploaded already scrambled.
+- Reading: `decryptMessage` / `decryptAll` (useChat, useConversations for inbox previews) fill in `message` and set `e2eState`: `ok`, `nokey` (sent before this device was set up, shown as a lock line, like WhatsApp on a new phone) or `error`. `VoiceNote` downloads and decrypts the audio into a `blob:` URL (the CSP allows `media-src blob:`).
+- If the recipient has no registered device yet, `encryptText` returns null and the message goes as plain text, as before. If encryption *fails*, the message is not sent; never fall back to plain text on an error.
+- Chat shows a lock banner when the other person can receive encrypted messages. Tapping it opens "Verify security code": 60 digits from SHA-256 over both users' device keys, the same on both phones, and it changes when a device is added.
+- Pushes and emails never contain message text. Calls are WebRTC (DTLS-SRTP), so they're encrypted between the two devices already.
+- Old plain-text messages stay readable. The server can't read encrypted ones, so server-side search or moderation of message text is impossible for them.
+
 **Voice and video calls.**
 - Calls are WebRTC between the two browsers. `utils/call.js` holds the peer connection and actions (`startCall`, `acceptCall`, `hangUp`, …), and `store/useCallStore.js` holds the state.
 - `hooks/useCallSync.js` (mounted by PageLayout) binds the socket events. `components/Call/CallScreen.jsx` is the full-screen UI, also mounted in PageLayout so a call survives navigation.

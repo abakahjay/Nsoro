@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import API from "../utils/api";
-import { getAuthToken } from "../utils/auth";
+import { getAuthToken, getAuthUserId } from "../utils/auth";
+import { decryptMessage } from "../utils/e2e";
+import useAuthStore from "../store/useAuthStore";
 import { getSocket } from "../utils/socket";
 import useShowToast from "./useShowToast";
 
 // The signed-in user's inbox: [{ user, lastMessage, unread }], newest first.
-// Refreshes whenever a message arrives over the socket.
+// Refreshes whenever a message arrives over the socket. Encrypted previews are
+// decrypted here on the device (utils/e2e.js).
 // `activeId`: the chat that's open right now - it shows as read straight away,
 // without waiting for the server's mark-read round trip.
 const useConversations = (activeId) => {
@@ -13,6 +16,7 @@ const useConversations = (activeId) => {
 	const [isLoading, setIsLoading] = useState(true);
 	const showToast = useShowToast();
 	const token = getAuthToken();
+	const myId = getAuthUserId(useAuthStore((state) => state.user));
 
 	const load = useCallback(
 		async (signal) => {
@@ -21,7 +25,10 @@ const useConversations = (activeId) => {
 					signal,
 					headers: { Authorization: `Bearer ${token}` },
 				});
-				setConversations(data.conversations);
+				const rows = await Promise.all(
+					data.conversations.map(async (c) => ({ ...c, lastMessage: await decryptMessage(c.lastMessage, myId) }))
+				);
+				setConversations(rows);
 			} catch (error) {
 				if (error.message === "canceled") return;
 				showToast("Error", error.response?.data?.error || error.message, "error");
@@ -29,7 +36,7 @@ const useConversations = (activeId) => {
 				setIsLoading(false);
 			}
 		},
-		[token, showToast]
+		[token, myId, showToast]
 	);
 
 	useEffect(() => {

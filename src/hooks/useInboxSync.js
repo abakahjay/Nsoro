@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import API from "../utils/api";
-import { getAuthToken } from "../utils/auth";
+import { getAuthToken, getAuthUserId } from "../utils/auth";
+import { ensureDevice } from "../utils/e2e";
+import useAuthStore from "../store/useAuthStore";
 import { getSocket } from "../utils/socket";
 import useInboxStore from "../store/useInboxStore";
 
@@ -12,6 +14,13 @@ export const useInboxSync = (enabled) => {
 	const setSummary = useInboxStore((state) => state.setSummary);
 	const { pathname } = useLocation();
 	const token = getAuthToken();
+	const myId = getAuthUserId(useAuthStore((state) => state.user));
+
+	// Register this device's encryption key as soon as you're signed in, so people
+	// can send you end-to-end encrypted messages before you open a chat.
+	useEffect(() => {
+		if (enabled && myId) ensureDevice(myId).catch(() => {});
+	}, [enabled, myId]);
 
 	useEffect(() => {
 		if (!enabled || !token) return;

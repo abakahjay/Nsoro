@@ -4,6 +4,7 @@ import { getAuthToken, getAuthUserId } from "../utils/auth";
 import { getSocket } from "../utils/socket";
 import useAuthStore from "../store/useAuthStore";
 import useShowToast from "./useShowToast";
+import { decryptAll, decryptMessage, encryptBlob, encryptText, ensureDevice, getDeviceKeys } from "../utils/e2e";
 
 const auth = () => ({ Authorization: `Bearer ${getAuthToken()}` });
 // The server doesn't echo our own messages back to this tab, so tell the inbox
@@ -13,6 +14,8 @@ const refreshInbox = () => window.dispatchEvent(new Event("inbox:refresh"));
 // A live one-to-one conversation with `otherUserId`: loads the history over REST,
 // then sends/receives over socket.io. The backend takes the sender from the JWT.
 // Also: edit + unsend your own messages, and voice notes (REST upload).
+// Text and voice notes are end-to-end encrypted (utils/e2e.js) once the other
+// person's app has set up encryption; `encrypted` says whether new ones will be.
 const useChat = (otherUserId) => {
 	const authUser = useAuthStore((state) => state.user);
 	const myId = getAuthUserId(authUser);
@@ -24,6 +27,7 @@ const useChat = (otherUserId) => {
 	// Ticks: everything I sent up to these server times reached their device / was
 	// read. Kept as times (not per message) so a receipt that beats the send ack still counts.
 	const [receipts, setReceipts] = useState({ deliveredAt: 0, readAt: 0 });
+	const [encrypted, setEncrypted] = useState(false);
 	const typingTimer = useRef(null);
 	const lastTypingSent = useRef(0);
 
@@ -47,8 +51,8 @@ const useChat = (otherUserId) => {
 		setMessages([]);
 		setReceipts({ deliveredAt: 0, readAt: 0 });
 		API.get(`/api/v1/messages/${myId}/${otherUserId}`, { signal: controller.signal, headers: auth() })
-			.then(({ data }) => {
-				setMessages(data);
+			.then(async ({ data }) => {
+				setMessages(await decryptAll(data, myId));
 				markRead();
 			})
 			.catch((error) => {
@@ -59,21 +63,37 @@ const useChat = (otherUserId) => {
 		return () => controller.abort();
 	}, [myId, otherUserId, token, markRead, showToast]);
 
+	// Set up this device's key, and see whether the other person can receive encrypted messages.
+	useEffect(() => {
+		if (!myId || !otherUserId) return;
+		let live = true;
+		setEncrypted(false);
+		ensureDevice(myId)
+			.then((me) => (me ? getDeviceKeys(otherUserId) : []))
+			.then((theirs) => live && setEncrypted(theirs.length > 0))
+			.catch(() => {});
+		return () => {
+			live = false;
+		};
+	}, [myId, otherUserId]);
+
 	// Live updates
 	useEffect(() => {
 		const socket = getSocket(token);
 		if (!socket || !otherUserId) return;
 
-		const onMessage = (message) => {
-			if (!belongsHere(message)) return; // another conversation
+		const onMessage = async (raw) => {
+			if (!belongsHere(raw)) return; // another conversation
+			const message = await decryptMessage(raw, myId);
 			setMessages((prev) => (prev.some((m) => m._id === message._id) ? prev : [...prev, message]));
 			if (message.sender === otherUserId) {
 				setIsOtherTyping(false);
 				markRead();
 			}
 		};
-		const onUpdated = (message) => {
-			if (!belongsHere(message)) return;
+		const onUpdated = async (raw) => {
+			if (!belongsHere(raw)) return;
+			const message = await decryptMessage(raw, myId);
 			setMessages((prev) => prev.map((m) => (m._id === message._id ? message : m)));
 		};
 		const onDeleted = ({ _id }) => setMessages((prev) => prev.filter((m) => m._id !== _id));
@@ -109,10 +129,10 @@ const useChat = (otherUserId) => {
 			socket.off("typing", onTyping);
 			clearTimeout(typingTimer.current);
 		};
-	}, [token, otherUserId, belongsHere, markRead]);
+	}, [token, myId, otherUserId, belongsHere, markRead]);
 
 	const sendMessage = useCallback(
-		(text) => {
+		async (text) => {
 			const message = text.trim();
 			const socket = getSocket(token);
 			if (!message || !socket) return;
@@ -123,12 +143,24 @@ const useChat = (otherUserId) => {
 				...prev,
 				{ _id: tempId, sender: myId, recipient: otherUserId, message, timestamp: new Date().toISOString(), pending: true },
 			]);
-			socket.timeout(10000).emit("sendMessage", { recipient: otherUserId, message }, (timeoutErr, reply) => {
+			let e2e = null;
+			try {
+				e2e = await encryptText(message, myId, otherUserId);
+			} catch {
+				// never fall back to plain text because encryption failed
+				setMessages((prev) => prev.map((m) => (m._id === tempId ? { ...m, pending: false, failed: true } : m)));
+				showToast("Error", "Message not sent - couldn't encrypt it. Check your connection.", "error");
+				return;
+			}
+			const payload = e2e ? { recipient: otherUserId, e2e } : { recipient: otherUserId, message };
+			socket.timeout(10000).emit("sendMessage", payload, (timeoutErr, reply) => {
 				const error = timeoutErr ? "Message not sent - check your connection" : reply?.error;
 				setMessages((prev) =>
 					prev.map((m) => {
 						if (m._id !== tempId) return m;
-						return error ? { ...m, pending: false, failed: true } : reply.message;
+						if (error) return { ...m, pending: false, failed: true };
+						// the saved copy is encrypted - keep the text we typed
+						return reply.message.e2e ? { ...reply.message, message, e2eState: "ok" } : reply.message;
 					})
 				);
 				if (error) showToast("Error", error, "error");
@@ -145,15 +177,17 @@ const useChat = (otherUserId) => {
 			const before = messages.find((m) => m._id === messageId);
 			setMessages((prev) => prev.map((m) => (m._id === messageId ? { ...m, message, editedAt: new Date().toISOString() } : m)));
 			try {
-				const { data } = await API.patch(`/api/v1/messages/${messageId}/edit`, { message }, { headers: auth() });
-				setMessages((prev) => prev.map((m) => (m._id === messageId ? data : m)));
+				const e2e = await encryptText(message, myId, otherUserId);
+				const { data } = await API.patch(`/api/v1/messages/${messageId}/edit`, e2e ? { e2e } : { message }, { headers: auth() });
+				const saved = data.e2e ? { ...data, message, e2eState: "ok" } : data;
+				setMessages((prev) => prev.map((m) => (m._id === messageId ? saved : m)));
 				refreshInbox();
 			} catch (error) {
 				if (before) setMessages((prev) => prev.map((m) => (m._id === messageId ? before : m)));
 				showToast("Couldn't edit", error.response?.data?.error || error.message, "error");
 			}
 		},
-		[messages, showToast]
+		[messages, myId, otherUserId, showToast]
 	);
 
 	// "Unsend": removes the message for both people.
@@ -184,8 +218,13 @@ const useChat = (otherUserId) => {
 				form.append("recipient", otherUserId);
 				form.append("duration", String(duration));
 				const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("ogg") ? "ogg" : "webm";
-				form.append("audio", blob, `voice.${ext}`);
-				const { data } = await API.post("/api/v1/messages/voice", form, { headers: auth() });
+				// encrypted: the server only ever gets the scrambled audio
+				const sealed = await encryptBlob(blob, myId, otherUserId);
+				if (sealed) form.append("e2e", JSON.stringify(sealed.envelope));
+				form.append("audio", sealed ? sealed.blob : blob, `voice.${ext}`);
+				const { data: saved } = await API.post("/api/v1/messages/voice", form, { headers: auth() });
+				// play our own copy straight from the recording, no download + decrypt
+				const data = sealed ? { ...saved, e2eState: "ok", localUrl: URL.createObjectURL(blob) } : saved;
 				setMessages((prev) => {
 					// the socket echo may have arrived first
 					const withoutTemp = prev.filter((m) => m._id !== tempId);
@@ -220,7 +259,7 @@ const useChat = (otherUserId) => {
 		[receipts]
 	);
 
-	return { myId, messages, isLoading, tickState, isOtherTyping, sendMessage, editMessage, unsendMessage, sendVoice, notifyTyping };
+	return { myId, messages, isLoading, encrypted, tickState, isOtherTyping, sendMessage, editMessage, unsendMessage, sendVoice, notifyTyping };
 };
 
 export default useChat;

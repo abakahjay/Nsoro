@@ -11,12 +11,20 @@ import {
 	MenuButton,
 	MenuItem,
 	MenuList,
+	Modal,
+	ModalBody,
+	ModalCloseButton,
+	ModalContent,
+	ModalHeader,
+	ModalOverlay,
+	SimpleGrid,
 	Spinner,
 	Text,
+	useDisclosure,
 } from "@chakra-ui/react";
 import { ArrowBackIcon, DeleteIcon } from "@chakra-ui/icons";
 import { IoCall, IoCallOutline, IoSend, IoVideocam, IoVideocamOutline } from "react-icons/io5";
-import { BsCheck2, BsCheck2All, BsClock, BsMicFill, BsPauseFill, BsPlayFill, BsThreeDots } from "react-icons/bs";
+import { BsCheck2, BsCheck2All, BsClock, BsLockFill, BsMicFill, BsPauseFill, BsPlayFill, BsThreeDots } from "react-icons/bs";
 import { Link as RouterLink, useParams } from "react-router-dom";
 import useChat from "../../hooks/useChat";
 import useVoiceRecorder, { MAX_VOICE_SECONDS } from "../../hooks/useVoiceRecorder";
@@ -25,6 +33,7 @@ import { useGetUserById } from "../../hooks/useGetUserById";
 import { mediaUrl } from "../../utils/media";
 import { startCall } from "../../utils/call";
 import { dayLabel, fullDateTime, groupByDay, timeLabel } from "../../utils/chatDates";
+import { decryptBlob, securityCode } from "../../utils/e2e";
 
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 const LONG_PRESS_MS = 450;
@@ -33,13 +42,14 @@ const LONG_PRESS_MS = 450;
 export default function ChatPage() {
 	const { id: otherUserId } = useParams();
 	const { userProfile, profileImageUrl } = useGetUserById(otherUserId);
-	const { myId, messages, isLoading, tickState, isOtherTyping, sendMessage, editMessage, unsendMessage, sendVoice, notifyTyping } = useChat(otherUserId);
+	const { myId, messages, isLoading, encrypted, tickState, isOtherTyping, sendMessage, editMessage, unsendMessage, sendVoice, notifyTyping } = useChat(otherUserId);
 	const [draft, setDraft] = useState("");
 	const [editing, setEditing] = useState(null); // message being edited
 	const [menuFor, setMenuFor] = useState(null);
 	const bottomRef = useRef(null);
 	const inputRef = useRef(null);
 	const showToast = useShowToast();
+	const verify = useDisclosure();
 	const recorder = useVoiceRecorder({ onAutoStop: ({ blob, duration }) => sendVoice(blob, duration) });
 
 	// "Seen" goes under the newest of my messages they've read
@@ -102,6 +112,31 @@ export default function ChatPage() {
 			</Flex>
 
 			<Box flex={1} overflowY='auto' px={4} py={4}>
+				{encrypted && (
+					<Flex
+						as='button'
+						type='button'
+						onClick={verify.onOpen}
+						mx='auto'
+						mb={3}
+						maxW='420px'
+						gap={2}
+						alignItems='flex-start'
+						textAlign='left'
+						fontSize='xs'
+						color='nsoro.secondary'
+						bg='whiteAlpha.100'
+						border='1px solid'
+						borderColor='nsoro.border'
+						borderRadius='lg'
+						px={3}
+						py={2}
+						data-testid='e2e-banner'
+					>
+						<Box as={BsLockFill} mt='2px' flexShrink={0} color='gold.400' />
+						<Text>Messages and voice notes are end-to-end encrypted. No one outside this chat, not even Nsoro, can read or listen to them. Tap to verify.</Text>
+					</Flex>
+				)}
 				{isLoading && (
 					<Flex justifyContent='center' mt={10}>
 						<Spinner />
@@ -125,6 +160,7 @@ export default function ChatPage() {
 								key={msg._id}
 								msg={msg}
 								mine={msg.sender === myId}
+								myId={myId}
 								menuOpen={menuFor === msg._id}
 								onOpenMenu={() => setMenuFor(msg._id)}
 								onCloseMenu={() => setMenuFor(null)}
@@ -194,17 +230,67 @@ export default function ChatPage() {
 					)}
 				</Flex>
 			)}
+			<SecurityCodeModal isOpen={verify.isOpen} onClose={verify.onClose} myId={myId} otherUserId={otherUserId} username={userProfile?.username} />
 		</Flex>
 	);
 }
 
-function MessageRow({ msg, mine, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUnsend, onCopy, onCallBack, ticks, seen }) {
+// "Verify security code": both people see the same 60 digits if nobody swapped a key.
+function SecurityCodeModal({ isOpen, onClose, myId, otherUserId, username }) {
+	const [code, setCode] = useState(undefined);
+	useEffect(() => {
+		if (!isOpen) return;
+		let live = true;
+		setCode(undefined);
+		securityCode(myId, otherUserId)
+			.then((c) => live && setCode(c))
+			.catch(() => live && setCode(null));
+		return () => {
+			live = false;
+		};
+	}, [isOpen, myId, otherUserId]);
+
+	return (
+		<Modal isOpen={isOpen} onClose={onClose} isCentered size='sm'>
+			<ModalOverlay />
+			<ModalContent bg='nsoro.surface' mx={4}>
+				<ModalHeader fontSize='md'>Verify security code</ModalHeader>
+				<ModalCloseButton />
+				<ModalBody pb={6}>
+					{code === undefined ? (
+						<Flex justifyContent='center' py={6}>
+							<Spinner />
+						</Flex>
+					) : code ? (
+						<>
+							<SimpleGrid columns={4} spacing={3} fontFamily='mono' fontSize='lg' textAlign='center' letterSpacing='wider' data-testid='e2e-security-code'>
+								{code.map((group, i) => (
+									<Text key={i}>{group}</Text>
+								))}
+							</SimpleGrid>
+							<Text fontSize='sm' color='nsoro.secondary' mt={5}>
+								Compare these numbers with {username || "them"}, in person or on a call. If they match, your chat is end-to-end encrypted with nobody in between. The code changes when either of you adds a new device.
+							</Text>
+						</>
+					) : (
+						<Text fontSize='sm' color='nsoro.secondary'>
+							{username || "They"}{" hasn't opened the updated Nsoro yet, so there's no code to compare. New messages will be encrypted once they do."}
+						</Text>
+					)}
+				</ModalBody>
+			</ModalContent>
+		</Modal>
+	);
+}
+
+function MessageRow({ msg, mine, myId, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUnsend, onCopy, onCallBack, ticks, seen }) {
 	const pressTimer = useRef(null);
 	const longPressed = useRef(false);
 	const [showSent, setShowSent] = useState(false); // tap a message to see exactly when it was sent
 	const isVoice = msg.type === "voice";
 	const isCall = msg.type === "call";
 	const canAct = mine && !msg.pending && !msg.failed && !isCall;
+	const unreadable = msg.e2eState === "nokey" || msg.e2eState === "error";
 
 	// Long-press on phones opens the menu; right-click on computers.
 	const pressHandlers = canAct
@@ -248,8 +334,8 @@ function MessageRow({ msg, mine, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUn
 							onClick={onOpenMenu}
 						/>
 						<MenuList bg='nsoro.surface' borderColor='nsoro.border' minW='150px'>
-							{!isVoice && <MenuItem bg='transparent' onClick={onEdit}>Edit</MenuItem>}
-							{!isVoice && <MenuItem bg='transparent' onClick={onCopy}>Copy</MenuItem>}
+							{!isVoice && !unreadable && <MenuItem bg='transparent' onClick={onEdit}>Edit</MenuItem>}
+							{!isVoice && !unreadable && <MenuItem bg='transparent' onClick={onCopy}>Copy</MenuItem>}
 							<MenuItem bg='transparent' color='red.300' onClick={onUnsend}>
 								Unsend
 							</MenuItem>
@@ -273,7 +359,15 @@ function MessageRow({ msg, mine, menuOpen, onOpenMenu, onCloseMenu, onEdit, onUn
 					onClick={toggleSent}
 					{...pressHandlers}
 				>
-					{isCall ? <CallLog msg={msg} mine={mine} onCallBack={onCallBack} /> : isVoice ? <VoiceNote msg={msg} /> : msg.message}
+					{isCall ? (
+						<CallLog msg={msg} mine={mine} onCallBack={onCallBack} />
+					) : isVoice ? (
+						<VoiceNote msg={msg} myId={myId} />
+					) : unreadable ? (
+						<Unreadable state={msg.e2eState} />
+					) : (
+						msg.message
+					)}
 					<Flex fontSize='10px' mt={1} justifyContent='flex-end' alignItems='center' gap={1} color={msg.failed ? "red.200" : "whiteAlpha.700"}>
 						<Text>{msg.failed ? "Not sent" : `${msg.editedAt ? "Edited · " : ""}${timeLabel(msg.timestamp)}`}</Text>
 						{ticks && <Ticks state={ticks} />}
@@ -341,11 +435,50 @@ function CallLog({ msg, mine, onCallBack }) {
 	);
 }
 
-function VoiceNote({ msg }) {
+// An encrypted message this device has no key for.
+function Unreadable({ state }) {
+	return (
+		<Flex as='span' alignItems='center' gap={2} fontStyle='italic' color='whiteAlpha.800'>
+			<BsLockFill />
+			{state === "nokey" ? "Sent before this device was set up, so it can't be read here." : "This message couldn't be decrypted."}
+		</Flex>
+	);
+}
+
+// Plain voice notes stream from the server; encrypted ones are downloaded and
+// decrypted on this device first (our own just-sent ones play from the recording).
+const useVoiceSrc = (msg, myId) => {
+	const [src, setSrc] = useState(msg.localUrl || null);
+	const [failed, setFailed] = useState(false);
+	useEffect(() => {
+		if (!msg.audioFileId || msg.localUrl) return;
+		if (!msg.e2e) {
+			setSrc(mediaUrl(msg.audioFileId));
+			return;
+		}
+		let live = true;
+		let url = null;
+		decryptBlob(msg.e2e, mediaUrl(msg.audioFileId), myId)
+			.then((blob) => {
+				url = URL.createObjectURL(blob);
+				if (live) setSrc(url);
+			})
+			.catch(() => live && setFailed(true));
+		return () => {
+			live = false;
+			if (url) URL.revokeObjectURL(url);
+		};
+	}, [msg.audioFileId, msg.e2e, msg.localUrl, myId]);
+	return { src, failed };
+};
+
+function VoiceNote({ msg, myId }) {
 	const audioRef = useRef(null);
 	const [playing, setPlaying] = useState(false);
 	const [progress, setProgress] = useState(0);
 	const duration = msg.duration || 0;
+	const { src, failed } = useVoiceSrc(msg, myId);
+	if (failed) return <Unreadable state='error' />;
 
 	const toggle = () => {
 		const a = audioRef.current;
@@ -356,10 +489,10 @@ function VoiceNote({ msg }) {
 
 	return (
 		<Flex alignItems='center' gap={2} minW='190px'>
-			{msg.audioFileId && (
+			{src && (
 				<audio
 					ref={audioRef}
-					src={mediaUrl(msg.audioFileId)}
+					src={src}
 					preload='metadata'
 					onPlay={() => setPlaying(true)}
 					onPause={() => setPlaying(false)}
@@ -379,7 +512,7 @@ function VoiceNote({ msg }) {
 				_hover={{ bg: "whiteAlpha.400" }}
 				color='white'
 				onClick={toggle}
-				isDisabled={!msg.audioFileId}
+				isDisabled={!src}
 			/>
 			<Box flex={1} h='3px' bg='whiteAlpha.400' borderRadius='full' overflow='hidden'>
 				<Box h='full' w={`${progress * 100}%`} bg='white' />

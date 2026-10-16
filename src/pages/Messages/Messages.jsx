@@ -130,6 +130,7 @@ function Inbox({ activeId }) {
 
 const previewText = (m, myId) => {
 	if (m.type === "voice") return "🎤 Voice message";
+	if (m.e2eState === "nokey" || m.e2eState === "error") return "🔒 Encrypted message";
 	if (m.type !== "call") return m.message;
 	const kind = m.callKind === "video" ? "video call" : "voice call";
 	return m.callStatus === "missed" && m.sender !== myId ? `Missed ${kind}` : kind[0].toUpperCase() + kind.slice(1);
