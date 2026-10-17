@@ -20,7 +20,7 @@ export function ProfilePage ({authUser,onLogout}){
 	
 	const userNotFound = !isLoading && !userProfile;
     const user=authUser?.user?authUser.user:authUser
-	const isOwner = !!user && user.username === username;
+	const isOwner = !!user && user.username?.trim() === username?.trim();
 	// ?tab=saved (from the More menu) opens that tab; otherwise Posts
 	const [searchParams] = useSearchParams();
 	const [tab, setTab] = useState(searchParams.get("tab") || "posts");

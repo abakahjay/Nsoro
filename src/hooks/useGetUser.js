@@ -33,7 +33,9 @@ export const useGetUser = (username) => {
 		};
 	}, [username, setUserProfile, setLoading, setError, showToast]);
 
-	const matches = userProfile?.user?.username?.toLowerCase() === username?.toLowerCase();
+	// trimmed: older accounts can have a space saved around the name, which links drop
+	const same = (a, b) => (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
+	const matches = !!username && same(userProfile?.user?.username, username);
 	return {
 		isLoading: isLoading || (!matches && !error),
 		error,
