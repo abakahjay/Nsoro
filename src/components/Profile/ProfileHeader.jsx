@@ -55,7 +55,10 @@ export default function ProfileHeader({authUser,onLogout,username,owner}) {
                   Send update
                 </Button>
               )}
-              {/* Phones have no sidebar, so logout lives here. */}
+              {/* Phones have no sidebar, so these live here. */}
+              <Button {...buttonProps} as={RouterLink} to='/settings/permissions' display={{ base: "inline-flex", md: "none" }} bg='nsoro.raised' border='1px solid' borderColor='nsoro.border' _hover={{ bg: "nsoro.hover" }} data-testid='profile-permissions'>
+                Permissions
+              </Button>
               <Button {...buttonProps} display={{ base: "inline-flex", md: "none" }} variant='outline' onClick={() => onLogout?.(user._id)}>
                 Log out
               </Button>

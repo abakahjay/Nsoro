@@ -2,7 +2,7 @@ import { Box, Flex, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Portal, T
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { PiBookmarkSimpleBold } from "react-icons/pi";
-import { FiDownload, FiSend, FiUser } from "react-icons/fi";
+import { FiDownload, FiSend, FiShield, FiUser } from "react-icons/fi";
 import { isInstalled } from "../../utils/install";
 import AppVersion from "../AppVersion/AppVersion";
 
@@ -38,6 +38,9 @@ export default function MoreMenu({ authUser, onLogout }) {
 			<MenuList minW='250px' py={2} borderRadius='xl' boxShadow='dark-lg' zIndex='popover'>
 				<MenuItem icon={<PiBookmarkSimpleBold size={18} />} as={RouterLink} to={`/${user?.username}?tab=saved`}>
 					Saved
+				</MenuItem>
+				<MenuItem icon={<FiShield size={18} />} as={RouterLink} to='/settings/permissions'>
+					App permissions
 				</MenuItem>
 				{!isInstalled() && (
 					<MenuItem icon={<FiDownload size={18} />} as={RouterLink} to='/download'>

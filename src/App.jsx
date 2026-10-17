@@ -16,6 +16,7 @@ import NotificationsPage from "./pages/Notifications/Notifications.jsx";
 import PostPage from "./pages/Post/PostPage.jsx";
 import DownloadPage from "./pages/Download/Download.jsx";
 import SendUpdatePage from "./pages/Admin/SendUpdate.jsx";
+import PermissionsPage from "./pages/Permissions/Permissions.jsx";
 import { syncPushSubscription } from "./utils/push.js";
 import NotificationPrompt from "./components/NotificationPrompt/NotificationPrompt.jsx";
 
@@ -111,6 +112,15 @@ export default function App(){
             element: (
                 <PageLayout authUser={authUser} onLogout={handleLogout}>
                     <DownloadPage />
+                </PageLayout>
+            ),
+        },
+        {
+            // notifications, microphone, camera and (Android app) call permissions
+            path: '/settings/permissions',
+            element: (
+                <PageLayout authUser={authUser} onLogout={handleLogout}>
+                    {authUser ? <PermissionsPage /> : <Navigate to="/auth" />}
                 </PageLayout>
             ),
         },
