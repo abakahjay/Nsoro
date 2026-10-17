@@ -1,6 +1,7 @@
 import useAuthStore from "../store/useAuthStore";
 import API from "../utils/api";
 import { closeSocket } from "../utils/socket";
+import { unlinkFcmToken } from "../utils/push";
 import useShowToast from "./useShowToast"; // Custom toast hook (if you have one)
 
 const useLogout = () => {
@@ -21,6 +22,7 @@ const useLogout = () => {
         // /logout just clears a cookie. So sign out here first and tell the server after;
         // a slow or failed request (Render waking up, a weak phone signal) used to leave
         // you signed in with a "Logout failed" error.
+        unlinkFcmToken(); // this phone stops ringing for this account
         closeSocket(); // the socket is authenticated as this user
         logoutUser(); // clears localStorage and the store
         setAuthUser(null);

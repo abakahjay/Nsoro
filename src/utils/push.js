@@ -1,7 +1,7 @@
 import API from "./api";
 import { getAuthToken } from "./auth";
 import { detectDevice, isInstalled } from "./install";
-import { androidAppVersion } from "./appVersion";
+import { androidAppVersion, FCM_KEY } from "./appVersion";
 
 // Device notifications (Web Push) for this app. The service worker side is
 // public/push-sw.js; the backend side is FullBackendd utils/push.js.
@@ -80,8 +80,34 @@ export const sendTestPush = () => API.post("/api/v1/push/test", { app: APP }).th
 let lastSync = 0;
 const RESYNC_MS = 5 * 60 * 1000;
 
+const fcmToken = () => {
+    try {
+        return localStorage.getItem(FCM_KEY);
+    } catch {
+        return null;
+    }
+};
+
+// The Android app (3.0.7+) gives the page its Firebase token in the launch URL. Linking it
+// to the signed-in account lets the backend wake the app itself for calls (FullBackendd
+// utils/fcm.js), which works even when the phone has put Chrome to sleep.
+export async function syncFcmToken() {
+    const token = fcmToken();
+    if (!token || !getAuthToken()) return;
+    await API.post("/api/v1/push/fcm/register", { token, versionCode: androidAppVersion() }).catch(() => {});
+}
+
+// On log out: stop ringing this phone for that account. Runs before the login token is cleared.
+export function unlinkFcmToken() {
+    const token = fcmToken();
+    const auth = getAuthToken();
+    if (!token || !auth) return;
+    API.post("/api/v1/push/fcm/unregister", { token }, { headers: { Authorization: `Bearer ${auth}` } }).catch(() => {});
+}
+
 export async function syncPushSubscription() {
     lastSync = Date.now();
+    syncFcmToken();
     try {
         if (needsInstallForPush() || !pushSupported() || Notification.permission !== "granted") return;
         const reg = await registration();

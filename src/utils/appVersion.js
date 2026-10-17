@@ -16,6 +16,7 @@ const SETUP_KEY = "nsoro-call-setup-status";
 const NAME_KEY = "nsoro-android-version-name"; // e.g. "3.0.5" (the app sends it from 3.0.5)
 const DESKTOP_KEY = "nsoro-desktop-version"; // the Windows app sends ?desktop_version= (2.3.1+)
 const DESKTOP_SESSION_KEY = "nsoro-desktop-session";
+export const FCM_KEY = "nsoro-fcm-token";
 
 const read = (key) => {
 	try {
@@ -58,6 +59,10 @@ export function captureAppVersion() {
 		const setup = params.get("call_setup");
 		if (setup === "missing" || setup === "ok") write(SETUP_KEY, setup);
 		params.delete("call_setup");
+		// 3.0.7+: the app's Firebase token, so calls wake the app itself (utils/push.js syncFcmToken)
+		const fcm = params.get("fcm_token");
+		if (fcm && /^[\w:-]{20,4096}$/.test(fcm)) write(FCM_KEY, fcm);
+		params.delete("fcm_token");
 	}
 	const desktop = params.get("desktop_version");
 	if (desktop && /^[\d.]{1,20}$/.test(desktop)) {
