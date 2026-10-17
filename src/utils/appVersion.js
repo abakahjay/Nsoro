@@ -11,6 +11,8 @@ const KEY = "nsoro-android-version";
 // id, so Chrome shows them in a normal browser window (not "standalone"); this still
 // lets them see the update card that installs the new app.
 const SESSION_KEY = "nsoro-android-session";
+// "missing" | "ok": whether the app still lacks something calls need (3.0.4+ sends it)
+const SETUP_KEY = "nsoro-call-setup-status";
 
 const read = (key) => {
 	try {
@@ -40,6 +42,9 @@ export function captureAppVersion() {
 			// private mode
 		}
 		params.delete("app_version");
+		const setup = params.get("call_setup");
+		if (setup === "missing" || setup === "ok") write(SETUP_KEY, setup);
+		params.delete("call_setup");
 		const query = params.toString();
 		window.history.replaceState(window.history.state, "", `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`);
 	}
@@ -76,6 +81,12 @@ export const getLatestVersions = () =>
 	fetch("/downloads/version.json", { cache: "no-store" })
 		.then((res) => (res.ok ? res.json() : null))
 		.catch(() => null);
+
+// The app's last report; null when it never said (older app, or not opened by the app yet).
+export const callSetupStatus = () => read(SETUP_KEY);
+
+export const readTime = (key) => Number(read(key)) || 0;
+export const writeTime = (key) => write(key, String(Date.now()));
 
 export const remembered = (key) => read(key) === "1";
 export const remember = (key) => write(key, "1");

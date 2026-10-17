@@ -1,20 +1,34 @@
 import { useEffect, useState } from "react";
 import { Box, Button, CloseButton, Flex, Text } from "@chakra-ui/react";
 import { BsArrowUpCircleFill, BsTelephoneFill } from "react-icons/bs";
-import { androidAppVersion, callSetupLink, getLatestVersions, remember, remembered, updateLink } from "../../utils/appVersion";
+import { androidAppVersion, callSetupLink, callSetupStatus, getLatestVersions, readTime, updateLink, writeTime } from "../../utils/appVersion";
 
-const CALL_SETUP_KEY = "nsoro-call-setup-v1";
+const SETUP_HIDDEN_KEY = "nsoro-call-setup-hidden-at";
+const HIDE_AFTER_CLOSE_MS = 24 * 3600 * 1000; // "x": ask again tomorrow
+const HIDE_AFTER_SETUP_MS = 3600 * 1000; // tapped "Set up": the app reports back on its next launch
+
+// Something calls need is still missing: notifications aren't on, or the app said so
+// on its last launch (older apps never say, so ask until they do).
+const setupNeeded = () => {
+	const notificationsOff = typeof Notification !== "undefined" && Notification.permission !== "granted";
+	return notificationsOff || callSetupStatus() !== "ok";
+};
+const setupHidden = () => {
+	const hiddenAt = readTime(SETUP_HIDDEN_KEY);
+	return Date.now() - hiddenAt < (readTime(`${SETUP_HIDDEN_KEY}-long`) ? HIDE_AFTER_CLOSE_MS : HIDE_AFTER_SETUP_MS);
+};
 
 // Cards that only appear inside the Android app (see utils/appVersion.js):
 //  - "Update available" when /downloads/version.json has a newer versionCode;
 //    the button opens the app's own updater (or downloads the APK on old apps).
-//  - once, "Ring like a phone call": opens the app's screen that asks for
-//    "Display over other apps", so incoming calls cover the screen.
+//  - "Ring like a phone call" while anything calls need is missing: opens the app's
+//    checklist (notifications, appear on top, full-screen alerts, battery). Shown here
+//    because reopening the app from recent apps never runs the app's own start-up list.
 export default function AppBanners() {
 	const [version] = useState(androidAppVersion);
 	const [latest, setLatest] = useState(null);
 	const [hideUpdate, setHideUpdate] = useState(false);
-	const [showSetup, setShowSetup] = useState(() => androidAppVersion() >= 7 && !remembered(CALL_SETUP_KEY));
+	const [showSetup, setShowSetup] = useState(() => androidAppVersion() >= 7 && setupNeeded() && !setupHidden());
 
 	useEffect(() => {
 		if (!version) return;
@@ -29,8 +43,17 @@ export default function AppBanners() {
 	const update = !hideUpdate && latest && Number(latest.versionCode) > version ? latest : null;
 	if (!update && !showSetup) return null;
 
-	const doneSetup = () => {
-		remember(CALL_SETUP_KEY);
+	// closed with "x": a day; tapped "Set up": an hour (long enough to come back from Settings)
+	const hideSetup = (long) => {
+		writeTime(SETUP_HIDDEN_KEY);
+		if (long) writeTime(`${SETUP_HIDDEN_KEY}-long`);
+		else {
+			try {
+				localStorage.removeItem(`${SETUP_HIDDEN_KEY}-long`);
+			} catch {
+				// private mode
+			}
+		}
 		setShowSetup(false);
 	};
 
@@ -51,10 +74,10 @@ export default function AppBanners() {
 				<Card
 					icon={<BsTelephoneFill />}
 					title='Ring like a phone call'
-					text='Let Nsoro calls fill your screen and ring, even while you use another app.'
-					onClose={doneSetup}
+					text="Calls can't ring yet when Nsoro is closed. Tap Set up and allow everything on the list."
+					onClose={() => hideSetup(true)}
 				>
-					<Button as='a' href={callSetupLink()} onClick={doneSetup} colorScheme='brand' size='sm' borderRadius='full' data-testid='call-setup'>
+					<Button as='a' href={callSetupLink()} onClick={() => hideSetup(false)} colorScheme='brand' size='sm' borderRadius='full' data-testid='call-setup'>
 						Set up
 					</Button>
 				</Card>
