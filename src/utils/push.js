@@ -1,4 +1,5 @@
 import API from "./api";
+import { getAuthToken } from "./auth";
 import { detectDevice, isInstalled } from "./install";
 import { androidAppVersion } from "./appVersion";
 
@@ -76,7 +77,11 @@ export const sendTestPush = () => API.post("/api/v1/push/test", { app: APP }).th
  * After sign-in: if this device already allowed notifications (e.g. the Android
  * app was granted the permission), subscribe it and link it to the current account.
  */
+let lastSync = 0;
+const RESYNC_MS = 5 * 60 * 1000;
+
 export async function syncPushSubscription() {
+    lastSync = Date.now();
     try {
         if (needsInstallForPush() || !pushSupported() || Notification.permission !== "granted") return;
         const reg = await registration();
@@ -84,4 +89,14 @@ export async function syncPushSubscription() {
     } catch {
         // best effort
     }
+}
+
+// Also re-link whenever the app comes back to the front (at most every 5 minutes).
+// Reopening the Android app from recent apps doesn't reload the page, and the browser
+// may have replaced this device's subscription meanwhile (notifications switched off
+// and on, an app update); without this, calls kept going to the old, dead address.
+if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible" && getAuthToken() && Date.now() - lastSync > RESYNC_MS) syncPushSubscription();
+    });
 }

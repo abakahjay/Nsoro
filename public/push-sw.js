@@ -151,3 +151,29 @@ self.addEventListener('notificationclick', (event) => {
     await self.clients.openWindow(target.href);
   })());
 });
+
+// The browser replaced this device's push subscription (notifications switched off and
+// on, an app update, or the push service rotating it). Subscribe again and move this
+// device on the server, so calls and messages keep arriving even if the app isn't
+// opened (FullBackendd POST /api/v1/push/resubscribe, proof = the old endpoint).
+const PUSH_API = 'https://fullbackendd.onrender.com/api/v1/push';
+const toKey = (base64) => {
+  const s = (base64 + '='.repeat((4 - (base64.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/');
+  return Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+};
+self.addEventListener('pushsubscriptionchange', (event) => {
+  event.waitUntil((async () => {
+    const oldEndpoint = event.oldSubscription?.endpoint;
+    let sub = event.newSubscription;
+    if (!sub) {
+      const { publicKey } = await (await fetch(`${PUSH_API}/public-key`)).json();
+      sub = await self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toKey(publicKey) });
+    }
+    if (!oldEndpoint) return; // nothing to move from; the app links it next time it opens
+    await fetch(`${PUSH_API}/resubscribe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oldEndpoint, subscription: sub.toJSON() }),
+    });
+  })().catch(() => {}));
+});
