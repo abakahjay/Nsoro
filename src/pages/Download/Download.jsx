@@ -84,6 +84,7 @@ const PLATFORMS = [
 			"Asked to allow installs from this source? Tap Settings → turn on “Allow from this source” → go back.",
 			"Samsung says the install was blocked (Auto Blocker)? Settings → Security and privacy → Auto Blocker → turn it off, install Nsoro, then turn it back on.",
 			"Play Protect warning? Tap “More details” → “Install anyway”. Then open Nsoro and tap Allow for notifications.",
+			"Had Nsoro before version 3.0? This is a new app, so remove the old one: Settings → Apps → the Nsoro that isn't version 3.0 or newer → Uninstall. Your account and chats stay.",
 		],
 	},
 	{

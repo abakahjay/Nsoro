@@ -14,7 +14,7 @@ export default function AppBanners() {
 	const [version] = useState(androidAppVersion);
 	const [latest, setLatest] = useState(null);
 	const [hideUpdate, setHideUpdate] = useState(false);
-	const [showSetup, setShowSetup] = useState(() => androidAppVersion() >= 5 && !remembered(CALL_SETUP_KEY));
+	const [showSetup, setShowSetup] = useState(() => androidAppVersion() >= 7 && !remembered(CALL_SETUP_KEY));
 
 	useEffect(() => {
 		if (!version) return;

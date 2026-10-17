@@ -3,12 +3,14 @@
 // /downloads/version.json lists something newer.
 //
 // The Android app (2.3.0+) opens the site with ?app_version=<versionCode>
-// (LauncherActivity.getLaunchingUrl). Older ones don't, but Chrome gives a TWA the
-// referrer android-app://<package>. The Windows app updates itself (desktop/main.js),
+// (LauncherActivity.getLaunchingUrl). The Windows app updates itself (desktop/main.js),
 // and the website, iPhone/Mac and ChromeOS apps always run the latest site.
-export const ANDROID_PACKAGE = "com.instagrammmm.app";
+export const ANDROID_PACKAGE = "com.nsoro.app";
 const KEY = "nsoro-android-version";
-const OLD_ANDROID_VERSION = 4; // 2.2.0 and older don't report a version
+// Set for this visit when the app opened us. Apps from before 3.0.0 had another package
+// id, so Chrome shows them in a normal browser window (not "standalone"); this still
+// lets them see the update card that installs the new app.
+const SESSION_KEY = "nsoro-android-session";
 
 const read = (key) => {
 	try {
@@ -32,21 +34,32 @@ export function captureAppVersion() {
 	const version = params.get("app_version");
 	if (version && /^\d{1,6}$/.test(version)) {
 		write(KEY, version);
+		try {
+			sessionStorage.setItem(SESSION_KEY, "1");
+		} catch {
+			// private mode
+		}
 		params.delete("app_version");
 		const query = params.toString();
 		window.history.replaceState(window.history.state, "", `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`);
-	} else if (document.referrer.startsWith(`android-app://${ANDROID_PACKAGE}`) && !read(KEY)) {
-		write(KEY, String(OLD_ANDROID_VERSION));
 	}
 }
+
+const openedByApp = () => {
+	try {
+		return sessionStorage.getItem(SESSION_KEY) === "1";
+	} catch {
+		return false;
+	}
+};
 
 const standalone = () => window.matchMedia?.("(display-mode: standalone)").matches;
 
 // versionCode of the Android app showing this page, or 0 when it's not the app.
-// (The app shares Chrome's storage, so also require the app's standalone window:
-// the same phone's normal Chrome tabs don't count.)
+// (The app shares Chrome's storage, so also require the app's standalone window, or
+// this visit having been opened by the app: the same phone's normal Chrome tabs don't count.)
 export const androidAppVersion = () => {
-	if (typeof window === "undefined" || !/Android/.test(navigator.userAgent) || !standalone()) return 0;
+	if (typeof window === "undefined" || !/Android/.test(navigator.userAgent) || !(standalone() || openedByApp())) return 0;
 	return Number(read(KEY)) || 0;
 };
 
@@ -54,8 +67,9 @@ export const androidAppVersion = () => {
 const appLink = (host, fallback) =>
 	`intent://${host}#Intent;scheme=nsoro;package=${ANDROID_PACKAGE};${fallback ? `S.browser_fallback_url=${encodeURIComponent(fallback)};` : ""}end`;
 
-export const updateLink = (version, apkUrl) =>
-	version >= 5 ? appLink("update", apkUrl) : apkUrl; // older apps can't update themselves: download the APK
+// 3.0.0 is a new app (new package id), so apps older than that download its APK
+// (the link falls back to it when the new app isn't installed yet).
+export const updateLink = (version, apkUrl) => (version >= 7 ? appLink("update", apkUrl) : apkUrl);
 export const callSetupLink = () => appLink("call-setup");
 
 export const getLatestVersions = () =>

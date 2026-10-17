@@ -1,4 +1,4 @@
 {
-  "android": { "versionCode": 6, "versionName": "2.3.1", "url": "/downloads/Nsoro.apk" },
+  "android": { "versionCode": 7, "versionName": "3.0.0", "url": "/downloads/Nsoro.apk" },
   "windows": { "version": "2.3.0", "url": "https://github.com/abakahjay/Nsoro/releases/latest/download/Nsoro-Setup.exe" }
 }
