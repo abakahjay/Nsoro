@@ -4,6 +4,7 @@ import { RxHamburgerMenu } from "react-icons/rx";
 import { PiBookmarkSimpleBold } from "react-icons/pi";
 import { FiDownload, FiSend, FiUser } from "react-icons/fi";
 import { isInstalled } from "../../utils/install";
+import AppVersion from "../AppVersion/AppVersion";
 
 // The ☰ "More" menu at the bottom of the left rail.
 export default function MoreMenu({ authUser, onLogout }) {
@@ -61,6 +62,8 @@ export default function MoreMenu({ authUser, onLogout }) {
 					Switch accounts
 				</MenuItem>
 				<MenuItem onClick={() => onLogout(user?._id)}>Log out</MenuItem>
+				<MenuDivider borderColor='nsoro.border' />
+				<AppVersion px={3} py={1} maxW='250px' />
 			</MenuList>
 			</Portal>
 		</Menu>

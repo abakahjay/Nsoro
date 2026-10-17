@@ -13,6 +13,9 @@ const KEY = "nsoro-android-version";
 const SESSION_KEY = "nsoro-android-session";
 // "missing" | "ok": whether the app still lacks something calls need (3.0.4+ sends it)
 const SETUP_KEY = "nsoro-call-setup-status";
+const NAME_KEY = "nsoro-android-version-name"; // e.g. "3.0.5" (the app sends it from 3.0.5)
+const DESKTOP_KEY = "nsoro-desktop-version"; // the Windows app sends ?desktop_version= (2.3.1+)
+const DESKTOP_SESSION_KEY = "nsoro-desktop-session";
 
 const read = (key) => {
 	try {
@@ -42,9 +45,31 @@ export function captureAppVersion() {
 			// private mode
 		}
 		params.delete("app_version");
+		const name = params.get("app_version_name");
+		if (name && /^[\d.]{1,20}$/.test(name)) write(NAME_KEY, name);
+		else {
+			try {
+				localStorage.removeItem(NAME_KEY); // an older app: name it from version.json
+			} catch {
+				// private mode
+			}
+		}
+		params.delete("app_version_name");
 		const setup = params.get("call_setup");
 		if (setup === "missing" || setup === "ok") write(SETUP_KEY, setup);
 		params.delete("call_setup");
+	}
+	const desktop = params.get("desktop_version");
+	if (desktop && /^[\d.]{1,20}$/.test(desktop)) {
+		write(DESKTOP_KEY, desktop);
+		try {
+			sessionStorage.setItem(DESKTOP_SESSION_KEY, "1");
+		} catch {
+			// private mode
+		}
+		params.delete("desktop_version");
+	}
+	if (version || desktop) {
 		const query = params.toString();
 		window.history.replaceState(window.history.state, "", `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`);
 	}
@@ -77,10 +102,38 @@ const appLink = (host, fallback) =>
 export const updateLink = (version, apkUrl) => (version >= 7 ? appLink("update", apkUrl) : apkUrl);
 export const callSetupLink = () => appLink("call-setup");
 
-export const getLatestVersions = () =>
-	fetch("/downloads/version.json", { cache: "no-store" })
+let latestPromise = null;
+// /downloads/version.json, fetched once per page load and shared.
+export const getLatestVersions = () => {
+	latestPromise ||= fetch("/downloads/version.json", { cache: "no-store" })
 		.then((res) => (res.ok ? res.json() : null))
 		.catch(() => null);
+	return latestPromise;
+};
+
+// The Windows app's version, or null when this isn't the Windows app.
+export const desktopAppVersion = () => {
+	try {
+		return sessionStorage.getItem(DESKTOP_SESSION_KEY) === "1" ? read(DESKTOP_KEY) : null;
+	} catch {
+		return null;
+	}
+};
+
+// The Android app's version name ("3.0.5"), or null when this isn't the Android app.
+// Apps older than 3.0.5 only send the version code: name it from version.json when it's
+// the latest, otherwise "build N".
+export const androidAppVersionName = (latest) => {
+	const code = androidAppVersion();
+	if (!code) return null;
+	const name = read(NAME_KEY);
+	if (name) return name;
+	return latest?.android && Number(latest.android.versionCode) === code ? latest.android.versionName : `build ${code}`;
+};
+
+// The website build (date + commit), stamped in by vite.config.js.
+// eslint-disable-next-line no-undef
+export const WEB_BUILD = typeof __NSORO_WEB_BUILD__ === "string" ? __NSORO_WEB_BUILD__ : "dev";
 
 // The app's last report; null when it never said (older app, or not opened by the app yet).
 export const callSetupStatus = () => read(SETUP_KEY);

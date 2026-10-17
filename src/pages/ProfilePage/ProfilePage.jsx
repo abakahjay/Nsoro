@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import API from "../../utils/api";
 import { getAuthToken } from "../../utils/auth";
 import PostGrid from "../../components/Profile/PostGrid";
+import AppVersion from "../../components/AppVersion/AppVersion";
 
 
 
@@ -33,6 +34,8 @@ export function ProfilePage ({authUser,onLogout}){
             <Flex py={{ base: 3, md: 6 }} px={{ base: 2, md: 4 }} w={"full"} maxW='935px' mx={"auto"} flexDirection={"column"}>
                 {!isLoading && userProfile &&<ProfileHeader  authUser={userProfile} onLogout={onLogout} username={username} owner={user?.username} viewer={user}/>}
                 {isLoading && <ProfileHeaderSkeleton />}
+                {/* your own profile: which web build and app versions you're on (phones have no sidebar menu) */}
+                {isOwner && !isLoading && <AppVersion textAlign='center' mt={2} display={{ base: "block", md: "none" }} />}
             </Flex>
             <Flex
 				px={{ base: 0, sm: 4 }}

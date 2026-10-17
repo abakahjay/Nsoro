@@ -1,4 +1,13 @@
 {
-  "android": { "versionCode": 11, "versionName": "3.0.4", "url": "/downloads/Nsoro.apk" },
-  "windows": { "version": "2.3.0", "url": "https://github.com/abakahjay/Nsoro/releases/latest/download/Nsoro-Setup.exe" }
+  "android": {
+    "versionCode": 12,
+    "versionName": "3.0.5",
+    "size": "2.4 MB",
+    "url": "/downloads/Nsoro.apk"
+  },
+  "windows": {
+    "version": "2.3.1",
+    "size": "78 MB",
+    "url": "https://github.com/abakahjay/Nsoro/releases/latest/download/Nsoro-Setup.exe"
+  }
 }

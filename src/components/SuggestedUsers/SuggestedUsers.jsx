@@ -1,4 +1,5 @@
 import { Box, Flex, Link, Skeleton, Text, VStack } from "@chakra-ui/react";
+import AppVersion from "../AppVersion/AppVersion";
 import { Link as RouterLink } from "react-router-dom";
 import SuggestedUser from "./SuggestedUser";
 import SuggestedHeader from "./SuggestedHeader";
@@ -65,6 +66,7 @@ export default function SuggestedUsers({ authUser, onLogout }) {
 						Abakah Joshua
 					</Link>
 				</Text>
+				<AppVersion mt={2} />
 			</Box>
 		</VStack>
 	);

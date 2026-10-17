@@ -1,9 +1,23 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa';
+import { execSync } from 'node:child_process';
+
+// Website build label shown in the app (More menu, footer, profile): the build date
+// and commit. Render sets RENDER_GIT_COMMIT; locally we ask git.
+const commit = (() => {
+  if (process.env.RENDER_GIT_COMMIT) return process.env.RENDER_GIT_COMMIT.slice(0, 7);
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim();
+  } catch {
+    return '';
+  }
+})();
+const WEB_BUILD = `${new Date().toISOString().slice(0, 10)}${commit ? ` (${commit})` : ''}`;
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: { __NSORO_WEB_BUILD__: JSON.stringify(WEB_BUILD) },
   plugins: [
     react(),
     VitePWA({

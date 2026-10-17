@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	Accordion,
 	AccordionButton,
@@ -24,6 +24,7 @@ import { MdLaptopMac } from "react-icons/md";
 import { FiShare2 } from "react-icons/fi";
 import { detectDevice, usePwaInstall } from "../../utils/install";
 import useShowToast from "../../hooks/useShowToast";
+import { getLatestVersions } from "../../utils/appVersion";
 
 // Public address of the site - links shared from here must never be localhost.
 const PUBLIC_SITE = "https://nsoro-app.onrender.com";
@@ -36,18 +37,20 @@ const PUBLIC_SITE = "https://nsoro-app.onrender.com";
 //    off - so these are offered second, with honest instructions.
 //    Windows: EXE (GitHub Release built from desktop/). Android: the signed APK in
 //    public/downloads (targets Android 16, runs on Android 5 and newer).
+//    Version and size come from /downloads/version.json (the same file the apps use to
+//    offer updates), so the buttons always show the version you'll actually get.
 const EXE = {
 	label: "Download installer (.exe)",
 	href: "https://github.com/abakahjay/Nsoro/releases/latest/download/Nsoro-Setup.exe",
-	size: "78 MB",
 	file: "Nsoro-Setup.exe",
+	latest: (v) => v?.windows && { version: v.windows.version, size: v.windows.size },
 };
 
 const APK = {
 	label: "Download Android app (.apk)",
 	href: "/downloads/Nsoro.apk",
-	size: "2.3 MB",
 	file: "Nsoro.apk",
+	latest: (v) => v?.android && { version: v.android.versionName, size: v.android.size },
 };
 
 // Where the "Install app" command lives when the browser doesn't offer the prompt.
@@ -131,9 +134,40 @@ function Steps({ steps }) {
 	);
 }
 
+// "Latest: Android 3.0.5 · Windows 2.3.1 · iPhone, iPad and Mac always up to date"
+function LatestVersions() {
+	const [v, setV] = useState(null);
+	useEffect(() => {
+		let live = true;
+		getLatestVersions().then((x) => live && setV(x));
+		return () => {
+			live = false;
+		};
+	}, []);
+	if (!v) return null;
+	const parts = [];
+	if (v.android) parts.push(`Android ${v.android.versionName}`);
+	if (v.windows) parts.push(`Windows ${v.windows.version}`);
+	parts.push("iPhone, iPad and Mac always up to date");
+	return (
+		<Text fontSize='sm' color='nsoro.secondary' data-testid='latest-versions'>
+			Latest: {parts.join(" · ")}
+		</Text>
+	);
+}
+
 function FileDownload({ platform, openByDefault = false }) {
 	const [open, setOpen] = useState(openByDefault);
+	const [latest, setLatest] = useState(null);
+	useEffect(() => {
+		let live = true;
+		getLatestVersions().then((v) => live && setLatest(v));
+		return () => {
+			live = false;
+		};
+	}, []);
 	const f = platform.file;
+	const info = f.latest(latest);
 	return (
 		<Box>
 			<Button
@@ -143,7 +177,7 @@ function FileDownload({ platform, openByDefault = false }) {
 				rightIcon={open ? <ChevronUpIcon /> : <ChevronDownIcon />}
 				onClick={() => setOpen(!open)}
 			>
-				Prefer an installer file? ({f.file.endsWith(".apk") ? ".apk" : ".exe"})
+				Prefer an installer file? ({f.file.endsWith(".apk") ? ".apk" : ".exe"}{info?.version ? `, version ${info.version}` : ""})
 			</Button>
 			<Collapse in={open} animateOpacity>
 				<Box mt={3} p={4} borderRadius='lg' bg='whiteAlpha.100'>
@@ -166,9 +200,12 @@ function FileDownload({ platform, openByDefault = false }) {
 						mb={3}
 					>
 						{f.label}
-						<Text as='span' fontWeight='normal' fontSize='sm' ml={2} opacity={0.8}>
-							· {f.size}
-						</Text>
+						{info && (
+							<Text as='span' fontWeight='normal' fontSize='sm' ml={2} opacity={0.8} data-testid={`download-version-${platform.key}`}>
+								· Version {info.version}
+								{info.size ? ` · ${info.size}` : ""}
+							</Text>
+						)}
 					</Button>
 					<Steps steps={platform.fileSteps} />
 				</Box>
@@ -218,6 +255,7 @@ export default function DownloadPage() {
 				<Text color='gray.400' maxW='460px'>
 					Free for Android, Windows, iPhone, iPad and Mac.
 				</Text>
+				<LatestVersions />
 			</VStack>
 
 			{/* The device you're on */}

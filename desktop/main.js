@@ -7,7 +7,8 @@ const fs = require("fs");
 const { spawn } = require("child_process");
 
 const SITE = "https://nsoro-app.onrender.com";
-const START_URL = `${SITE}/?source=desktop`;
+// desktop_version: the site shows "Windows app 2.3.1" in its menu and footer.
+const START_URL = `${SITE}/?source=desktop&desktop_version=${app.getVersion()}`;
 // Google sign-in leaves the site and comes back; these hosts stay in the window.
 const IN_APP_HOSTS = new Set([new URL(SITE).host, "fullbackendd.onrender.com", "accounts.google.com"]);
 
