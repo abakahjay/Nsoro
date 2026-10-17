@@ -121,14 +121,14 @@ export const desktopAppVersion = () => {
 };
 
 // The Android app's version name ("3.0.5"), or null when this isn't the Android app.
-// Apps older than 3.0.5 only send the version code: name it from version.json when it's
-// the latest, otherwise "build N".
+// Apps older than 3.0.5 only send the version code: name it from version.json
+// (`android.names` maps old codes to names), otherwise "build N".
 export const androidAppVersionName = (latest) => {
 	const code = androidAppVersion();
 	if (!code) return null;
 	const name = read(NAME_KEY);
 	if (name) return name;
-	return latest?.android && Number(latest.android.versionCode) === code ? latest.android.versionName : `build ${code}`;
+	return latest?.android?.names?.[code] || `build ${code}`;
 };
 
 // The website build (date + commit), stamped in by vite.config.js.

@@ -3,7 +3,15 @@
     "versionCode": 12,
     "versionName": "3.0.5",
     "size": "2.4 MB",
-    "url": "/downloads/Nsoro.apk"
+    "url": "/downloads/Nsoro.apk",
+    "names": {
+      "7": "3.0.0",
+      "8": "3.0.1",
+      "9": "3.0.2",
+      "10": "3.0.3",
+      "11": "3.0.4",
+      "12": "3.0.5"
+    }
   },
   "windows": {
     "version": "2.3.1",
