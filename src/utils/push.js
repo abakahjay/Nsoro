@@ -1,5 +1,6 @@
 import API from "./api";
 import { detectDevice, isInstalled } from "./install";
+import { androidAppVersion } from "./appVersion";
 
 // Device notifications (Web Push) for this app. The service worker side is
 // public/push-sw.js; the backend side is FullBackendd utils/push.js.
@@ -41,7 +42,9 @@ async function subscribe(reg) {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(data.publicKey),
     });
-    await API.post("/api/v1/push/subscribe", { app: APP, subscription: sub.toJSON() });
+    // inside the Android app, the app rings for calls itself (FullBackendd utils/push.js)
+    const client = androidAppVersion() ? "android-app" : "web";
+    await API.post("/api/v1/push/subscribe", { app: APP, subscription: sub.toJSON(), client });
     return sub;
 }
 
