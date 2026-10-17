@@ -24,7 +24,7 @@ import { MdLaptopMac } from "react-icons/md";
 import { FiShare2 } from "react-icons/fi";
 import { detectDevice, usePwaInstall } from "../../utils/install";
 import useShowToast from "../../hooks/useShowToast";
-import { getLatestVersions } from "../../utils/appVersion";
+import { androidAppVersion, getLatestVersions } from "../../utils/appVersion";
 
 // Public address of the site - links shared from here must never be localhost.
 const PUBLIC_SITE = "https://nsoro-app.onrender.com";
@@ -214,6 +214,43 @@ function FileDownload({ platform, openByDefault = false }) {
 	);
 }
 
+// Android: the APK app is the main option. Only it rings for calls like a phone call,
+// covers the screen and updates itself; the Chrome-installed web app can't.
+function AndroidApp({ platform }) {
+	const [latest, setLatest] = useState(null);
+	useEffect(() => {
+		let live = true;
+		getLatestVersions().then((v) => live && setLatest(v));
+		return () => {
+			live = false;
+		};
+	}, []);
+	const info = APK.latest(latest);
+	return (
+		<Box mb={4}>
+			<Button
+				as='a'
+				href={APK.href}
+				download={APK.file}
+				type='application/vnd.android.package-archive'
+				leftIcon={<DownloadIcon />}
+				colorScheme='brand'
+				size='lg'
+				w='full'
+				data-testid='download-apk-primary'
+			>
+				Download Nsoro for Android
+			</Button>
+			<Text fontSize='xs' color='gray.400' textAlign='center' mt={2}>
+				{info ? `Version ${info.version}${info.size ? ` · ${info.size}` : ""} · ` : ""}calls ring like a phone call · updates inside the app
+			</Text>
+			<Box mt={4} p={4} borderRadius='lg' bg='whiteAlpha.100'>
+				<Steps steps={platform.fileSteps} />
+			</Box>
+		</Box>
+	);
+}
+
 export default function DownloadPage() {
 	const device = detectDevice();
 	const { canInstall, install, installed } = usePwaInstall();
@@ -225,6 +262,10 @@ export default function DownloadPage() {
 	const menuSteps = device.os === "android"
 		? MENU_STEPS.android[device.browser] || MENU_STEPS.android.other
 		: MENU_STEPS.desktop[device.browser] || MENU_STEPS.desktop.other;
+	const onAndroid = device.os === "android";
+	// Inside the Chrome-installed web app on Android, still offer the real app.
+	const usingApp = (installed || justInstalled) && !(onAndroid && !androidAppVersion());
+	const [showWebInstall, setShowWebInstall] = useState(false);
 	const showFallbackSteps = browserInstallable && !canInstall && !(device.os === "mac" && device.browser === "safari");
 
 	const onInstall = async () => {
@@ -260,7 +301,7 @@ export default function DownloadPage() {
 
 			{/* The device you're on */}
 			<Box border='1px solid' borderColor='nsoro.border' borderRadius='xl' p={{ base: 5, md: 6 }} mb={6}>
-				{installed || justInstalled ? (
+				{usingApp ? (
 					<Flex alignItems='center' gap={3}>
 						<CheckCircleIcon color='green.400' boxSize={6} />
 						<Box>
@@ -282,10 +323,23 @@ export default function DownloadPage() {
 							</Badge>
 						</Flex>
 
-						{canInstall && (
+						{onAndroid && <AndroidApp platform={current} />}
+
+						{onAndroid && (canInstall || showFallbackSteps) && (
+							<Button variant='link' size='sm' color='gray.300' mb={showWebInstall ? 3 : 0} onClick={() => setShowWebInstall(!showWebInstall)}>
+								Prefer not to download a file? Install the web app instead
+							</Button>
+						)}
+						{onAndroid && showWebInstall && (
+							<Text fontSize='xs' color='yellow.300' mb={3}>
+								{"The web app works, but calls only show as a quiet notification: they don't ring or fill the screen like they do in the Android app."}
+							</Text>
+						)}
+
+						{canInstall && (!onAndroid || showWebInstall) && (
 							<Box mb={4}>
-								<Button leftIcon={<DownloadIcon />} colorScheme='brand' size='lg' w='full' onClick={onInstall}>
-									Install Nsoro
+								<Button leftIcon={<DownloadIcon />} colorScheme='brand' variant={onAndroid ? "outline" : "solid"} size='lg' w='full' onClick={onInstall}>
+									{onAndroid ? "Install the web app" : "Install Nsoro"}
 								</Button>
 								<Text fontSize='xs' color='gray.400' textAlign='center' mt={2}>
 									No download, no warnings · installs in seconds · updates itself
@@ -293,7 +347,7 @@ export default function DownloadPage() {
 							</Box>
 						)}
 
-						{showFallbackSteps && (
+						{showFallbackSteps && (!onAndroid || showWebInstall) && (
 							<Box mb={4}>
 								<Text fontSize='sm' fontWeight='semibold' mb={2}>
 									Install from your browser - no download, no warnings:
@@ -304,7 +358,7 @@ export default function DownloadPage() {
 
 						{/* Android phones already see the Install button or the menu steps above */}
 						{current?.steps && current.key !== "android" && <Steps steps={current.steps} />}
-						{current?.file && <FileDownload platform={current} openByDefault={!browserInstallable || current.key === "android"} />}
+						{current?.file && !onAndroid && <FileDownload platform={current} openByDefault={!browserInstallable} />}
 						{!current && <Text color='gray.300'>Pick your device below.</Text>}
 					</>
 				)}
