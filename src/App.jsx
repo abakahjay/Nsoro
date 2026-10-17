@@ -17,6 +17,7 @@ import PostPage from "./pages/Post/PostPage.jsx";
 import DownloadPage from "./pages/Download/Download.jsx";
 import SendUpdatePage from "./pages/Admin/SendUpdate.jsx";
 import PermissionsPage from "./pages/Permissions/Permissions.jsx";
+import WatchPage from "./pages/Watch/Watch.jsx";
 import { syncPushSubscription } from "./utils/push.js";
 import NotificationPrompt from "./components/NotificationPrompt/NotificationPrompt.jsx";
 
@@ -112,6 +113,15 @@ export default function App(){
             element: (
                 <PageLayout authUser={authUser} onLogout={handleLogout}>
                     <DownloadPage />
+                </PageLayout>
+            ),
+        },
+        {
+            // videos one at a time, full screen (ranked like the Home feed)
+            path: '/watch',
+            element: (
+                <PageLayout authUser={authUser} onLogout={handleLogout}>
+                    {authUser ? <WatchPage /> : <Navigate to="/auth" />}
                 </PageLayout>
             ),
         },

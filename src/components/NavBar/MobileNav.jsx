@@ -1,6 +1,6 @@
 import { Box, Flex, Link } from "@chakra-ui/react";
 import { NavLink } from "react-router-dom";
-import { PiHouseFill } from "react-icons/pi";
+import { PiHouseFill, PiPlayCircleFill } from "react-icons/pi";
 import { NsoroLogo, MessagesLogo, NotificationsLogo, SearchLogo } from "../../assets/constants";
 import CreatePost from "../SideBar/CreatePost";
 import ProfileLink from "../SideBar/ProfileLink";
@@ -9,7 +9,7 @@ import useNotificationStore from "../../store/useNotificationStore";
 import useInboxStore from "../../store/useInboxStore";
 
 // Phone layout (below the `md` breakpoint), like a native app: a top bar with the
-// logo + messages, and a fixed bottom tab bar (Home, Search, Create, Activity, Profile). PageLayout hides the sidebar there.
+// logo + messages, and a fixed bottom tab bar (Home, Search, Watch, Create, Activity, Profile). PageLayout hides the sidebar there.
 export const MOBILE_TOP_BAR_H = "56px";
 export const MOBILE_BOTTOM_BAR_H = "56px";
 
@@ -85,6 +85,9 @@ export function MobileBottomNav({ authUser, onLogout }) {
 			</IconLink>
 			<IconLink to='/search' label='Search'>
 				<SearchLogo />
+			</IconLink>
+			<IconLink to='/watch' label='Watch'>
+				<PiPlayCircleFill size={26} />
 			</IconLink>
 			<CreatePost />
 			<IconLink to='/notifications' label='Notifications'>

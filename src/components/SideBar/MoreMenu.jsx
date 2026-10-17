@@ -40,7 +40,7 @@ export default function MoreMenu({ authUser, onLogout }) {
 					Saved
 				</MenuItem>
 				<MenuItem icon={<FiShield size={18} />} as={RouterLink} to='/settings/permissions'>
-					App permissions
+					Settings & permissions
 				</MenuItem>
 				{!isInstalled() && (
 					<MenuItem icon={<FiDownload size={18} />} as={RouterLink} to='/download'>

@@ -46,7 +46,7 @@ export default function FeedPosts({authUser}) {
 				<>
 					<VStack py={12} px={6} spacing={3} textAlign={"center"}>
 						<Text fontSize={"xl"} fontWeight={"bold"}>Welcome to Nsoro</Text>
-						<Text color={"gray.400"}>Follow people to see their photos and videos here.</Text>
+						<Text color={"gray.400"}>No posts yet. Share the first photo or video, or find people to follow.</Text>
 						<Button as={RouterLink} to='/search' colorScheme='brand' size='sm'>Find people</Button>
 					</VStack>
 				</>

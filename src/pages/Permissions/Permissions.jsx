@@ -7,6 +7,7 @@ import { androidAppVersion, callSetupLink, callSetupStatus } from "../../utils/a
 import { detectDevice } from "../../utils/install";
 import useShowToast from "../../hooks/useShowToast";
 import AppVersion from "../../components/AppVersion/AppVersion";
+import DeleteAccount from "../../components/DeleteAccount/DeleteAccount";
 
 // /settings/permissions: everything Nsoro can ask for on this device, with its status
 // and a button to allow it. On every device: notifications, microphone, camera. In the
@@ -82,6 +83,9 @@ export default function PermissionsPage() {
 	return (
 		<Box maxW='640px' mx='auto' px={4} py={{ base: 6, md: 10 }}>
 			<Heading size='lg' mb={2}>
+				Settings
+			</Heading>
+			<Heading size='sm' mt={6} mb={1}>
 				App permissions
 			</Heading>
 			<Text color='nsoro.secondary' mb={6}>
@@ -130,6 +134,7 @@ export default function PermissionsPage() {
 					On iPhone and iPad, notifications work in the Home Screen app (Share → Add to Home Screen), on iOS 16.4 or newer.
 				</Text>
 			)}
+			<DeleteAccount />
 			<AppVersion mt={8} textAlign='center' />
 		</Box>
 	);

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Box, Image } from "@chakra-ui/react";
-import { BsPlayFill } from "react-icons/bs";
+import { BsPlayFill, BsVolumeMuteFill, BsVolumeUpFill } from "react-icons/bs";
 import { imageUrl, isVideoPost, mediaUrl, playVideo } from "../../utils/media";
 
 // Renders a post's image or video.
-//   variant="feed"  - full width; videos autoplay muted while on screen
+//   variant="feed"  - full width (tall photos cropped to 4:5 portrait, like other photo
+//                     apps); videos autoplay muted while on screen, with a mute button
 //   variant="thumb" - square grid tile; videos show their first frame + play badge
 //   variant="full"  - post modal; videos play with sound controls
 export default function PostMedia({ post, variant = "feed" }) {
@@ -19,7 +20,7 @@ export default function PostMedia({ post, variant = "feed" }) {
 			variant === "thumb"
 				? { w: "100%", h: "100%", objectFit: "cover" }
 				: variant === "feed"
-				? { w: "100%", objectFit: "cover" }
+				? { w: "100%", maxH: "min(125vw, 700px)", objectFit: "cover" }
 				: { maxH: "85vh", objectFit: "contain" };
 		return (
 			<Image
@@ -55,6 +56,7 @@ export default function PostMedia({ post, variant = "feed" }) {
 
 function PostVideo({ src, autoPlayInView }) {
 	const ref = useRef(null);
+	const [muted, setMuted] = useState(true);
 
 	// Play (muted) when mostly visible, pause when scrolled away.
 	useEffect(() => {
@@ -63,7 +65,7 @@ function PostVideo({ src, autoPlayInView }) {
 		const observer = new IntersectionObserver(
 			([entry]) => {
 				// if you unmuted it, coming back to it must not leave it frozen (see playVideo)
-				if (entry.isIntersecting) playVideo(video);
+				if (entry.isIntersecting) playVideo(video).then((r) => r === "muted" && setMuted(true));
 				else video.pause();
 			},
 			{ threshold: 0.6 }
@@ -72,17 +74,42 @@ function PostVideo({ src, autoPlayInView }) {
 		return () => observer.disconnect();
 	}, [autoPlayInView]);
 
+	if (!autoPlayInView) {
+		return <video ref={ref} src={src} controls playsInline autoPlay preload='metadata' style={{ width: "100%", maxHeight: "80vh", background: "black" }} />;
+	}
+
+	// Feed: no player controls, just a sound button, like other short-video apps.
+	const toggleSound = (e) => {
+		e.stopPropagation(); // not a tap on the post (double-tap stars)
+		const video = ref.current;
+		if (!video) return;
+		video.muted = !video.muted;
+		setMuted(video.muted);
+		if (video.paused) playVideo(video);
+	};
 	return (
-		<video
-			ref={ref}
-			src={src}
-			controls
-			playsInline
-			loop={autoPlayInView}
-			muted={autoPlayInView}
-			autoPlay={!autoPlayInView}
-			preload='metadata'
-			style={{ width: "100%", maxHeight: "80vh", background: "black" }}
-		/>
+		<Box position='relative'>
+			<video ref={ref} src={src} playsInline loop muted={muted} preload='metadata' style={{ width: "100%", maxHeight: "min(125vw, 700px)", objectFit: "cover", background: "black", display: "block" }} />
+			<Box
+				as='button'
+				type='button'
+				aria-label={muted ? "Turn sound on" : "Turn sound off"}
+				onClick={toggleSound}
+				position='absolute'
+				right={3}
+				bottom={3}
+				w='34px'
+				h='34px'
+				borderRadius='full'
+				bg='blackAlpha.700'
+				color='white'
+				display='flex'
+				alignItems='center'
+				justifyContent='center'
+				data-testid='video-sound'
+			>
+				{muted ? <BsVolumeMuteFill size={18} /> : <BsVolumeUpFill size={18} />}
+			</Box>
+		</Box>
 	);
 }

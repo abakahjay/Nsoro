@@ -18,18 +18,15 @@ const useGetFeedPosts = () => {
 	useEffect(() => {
 		const getFeedPosts = async () => {
 			setIsLoading(true);
-			if (user?.following?.length === 0|| !user.following|| !user) {
-				setIsLoading(false);
-				setPosts([]);
-				return;
-			}
-
+			// Everyone gets every post, ranked for them like other social apps (fresh, popular,
+			// people you follow or engage with first). It used to be empty for anyone who
+			// didn't follow people yet.
 			try {
-				const response =await API.get(`/api/v1/posts`)
+				// ranked for this person (FullBackendd utils/nsoroFeed.js); plain newest-first as a fallback
+				const response = await API.get(`/api/v1/nsoro/feed`).catch(() => API.get(`/api/v1/posts`))
         // console.log(response.data)
         const posts = response.data.posts
         // console.log(posts)
-				const feedPosts = [];
 
 				setPosts(posts);
 			} catch (error) {
