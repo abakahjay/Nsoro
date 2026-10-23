@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Alert, AlertIcon, Button, Input } from "@chakra-ui/react";
+import { Alert, AlertIcon, Button, Input, Link } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import useLogin from "../../hooks/useLogin";
 
@@ -48,6 +48,14 @@ export default function Login({onAuth}) {
 			>
 				Log in
 			</Button>
+			{/* Hosted by the backend: emails a reset link for the shared account */}
+			<Link
+				href={`${import.meta.env.VITE_API_URL}/forgotPassword?app=shared&return=${encodeURIComponent(window.location.href)}`}
+				fontSize={13}
+				color='gray.500'
+			>
+				Forgot password?
+			</Link>
         </>
     )
 }
