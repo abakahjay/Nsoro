@@ -1,5 +1,6 @@
-import { Box, Flex, Image, Text, VStack } from "@chakra-ui/react";
+import { Box, Checkbox, Flex, Image, Link, Text, VStack } from "@chakra-ui/react";
 import { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import Login from "./Login";
 import Signup from "./Signup";
 import GoogleAuth from "./GoogleAuth";
@@ -7,6 +8,11 @@ import GoogleAuth from "./GoogleAuth";
 
 export function AuthForm({onAuth}){
     const [isLogin, setIsLogin] = useState(true);
+    // Age + terms confirmation, required before an account is created by email or Google.
+    const [agreed, setAgreed] = useState(false);
+    const [consentNudge, setConsentNudge] = useState(false);
+    const needsConsent = !isLogin && !agreed;
+    const askConsent = () => setConsentNudge(true);
 
     return (
         <>
@@ -14,7 +20,29 @@ export function AuthForm({onAuth}){
                 <VStack spacing={4}>
                     <Image src='/logo.png' h={24} cursor={"pointer"} alt='Nsoro' />
 
-                    {isLogin ? <Login onAuth={onAuth} /> : <Signup onAuth={onAuth}/>}
+                    {!isLogin && (
+                        <Checkbox
+                            isChecked={agreed}
+                            onChange={(e) => { setAgreed(e.target.checked); setConsentNudge(false); }}
+                            isInvalid={consentNudge}
+                            alignItems='flex-start'
+                            w='full'
+                            data-testid='checkbox-consent'
+                        >
+                            <Text as='span' fontSize={13} color='gray.300'>
+                                I&apos;m 13 or older and agree to the{" "}
+                                <Link as={RouterLink} to='/terms' color='brand.400' textDecoration='underline'>Terms</Link> and{" "}
+                                <Link as={RouterLink} to='/privacy' color='brand.400' textDecoration='underline'>Privacy Policy</Link>.
+                            </Text>
+                        </Checkbox>
+                    )}
+                    {consentNudge && (
+                        <Text role='alert' fontSize={13} color='red.300' w='full'>
+                            Please confirm you are 13 or older and agree to the terms.
+                        </Text>
+                    )}
+
+                    {isLogin ? <Login onAuth={onAuth} /> : <Signup onAuth={onAuth} needsConsent={needsConsent} onNeedConsent={askConsent} />}
 
                     {/* ---------------- OR -------------- */}
                     <Flex alignItems={"center"} justifyContent={"center"} my={4} gap={1} w={"full"}>
@@ -25,7 +53,7 @@ export function AuthForm({onAuth}){
                         <Box flex={2} h={"1px"} bg={"gray.400"} />
                     </Flex>
 
-                    <GoogleAuth prefix={isLogin ? "Log in" : "Sign up"} />
+                    <GoogleAuth prefix={isLogin ? "Log in" : "Sign up"} needsConsent={needsConsent} onNeedConsent={askConsent} />
                 </VStack>
             </Box>
 
@@ -39,6 +67,9 @@ export function AuthForm({onAuth}){
                     </Box>
                 </Flex>
             </Box>
+            <Text fontSize={12} color='gray.500' textAlign='center'>
+                <Link as={RouterLink} to='/terms'>Terms</Link> · <Link as={RouterLink} to='/privacy'>Privacy</Link>
+            </Text>
         </>
     );
 };

@@ -3,12 +3,13 @@ import { useState } from "react";
 import useShowToast from "../../hooks/useShowToast";
 import useAuthStore from "../../store/useAuthStore"; // Import your Zustand store
 
-const GoogleAuth = ({ prefix }) => {
+const GoogleAuth = ({ prefix, needsConsent = false, onNeedConsent = () => {} }) => {
 	const [error, setError] = useState(null);
 	const showToast = useShowToast();
 	const loginUser = useAuthStore((state) => state.loginUser); // Get the login action from Zustand store
 
 	const handleGoogleAuth = async () => {
+		if (needsConsent) return onNeedConsent();
 		try {
 			// FullBackendd sends the user back to redirect_uri with ?token=<jwt>, which
 			// consumeGoogleLoginToken() (utils/auth.js) picks up on page load. The site root is

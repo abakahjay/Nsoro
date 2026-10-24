@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import useSignup from "../../hooks/useSignup";
 
 
-export default function Signup({onAuth}) {
+export default function Signup({ onAuth, needsConsent = false, onNeedConsent = () => {} }) {
 		// const navigate = useNavigate();
         const [email, setEmail] = useState("");
         const [password, setPassword] = useState("");
@@ -17,6 +17,7 @@ export default function Signup({onAuth}) {
 
         const handleSubmit = async (e) => {
                 e.preventDefault();
+                if (needsConsent) return onNeedConsent();
                 signup(email, password,firstName,lastName,username)
         };
     return (

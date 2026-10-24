@@ -16,6 +16,8 @@ import NotificationsPage from "./pages/Notifications/Notifications.jsx";
 import PostPage from "./pages/Post/PostPage.jsx";
 import DownloadPage from "./pages/Download/Download.jsx";
 import SendUpdatePage from "./pages/Admin/SendUpdate.jsx";
+import ReportsPage from "./pages/Admin/Reports.jsx";
+import LegalPage from "./pages/Legal/Legal.jsx";
 import PermissionsPage from "./pages/Permissions/Permissions.jsx";
 import WatchPage from "./pages/Watch/Watch.jsx";
 import { syncPushSubscription } from "./utils/push.js";
@@ -139,6 +141,31 @@ export default function App(){
             element: (
                 <PageLayout authUser={authUser} onLogout={handleLogout}>
                     {authUser ? <SendUpdatePage /> : <Navigate to="/auth" />}
+                </PageLayout>
+            ),
+        },
+        {
+            path: '/admin/reports',
+            element: (
+                <PageLayout authUser={authUser} onLogout={handleLogout}>
+                    {authUser ? <ReportsPage /> : <Navigate to="/auth" />}
+                </PageLayout>
+            ),
+        },
+        {
+            // Public: linked from sign-up (age + terms checkbox) and the More menu.
+            path: '/privacy',
+            element: (
+                <PageLayout authUser={authUser} onLogout={handleLogout}>
+                    <LegalPage page="privacy" />
+                </PageLayout>
+            ),
+        },
+        {
+            path: '/terms',
+            element: (
+                <PageLayout authUser={authUser} onLogout={handleLogout}>
+                    <LegalPage page="terms" />
                 </PageLayout>
             ),
         },

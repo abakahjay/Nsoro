@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import useFollowUser from "../../hooks/useFollowUser";
 import { timeAgo } from "../../utils/timeAgo";
 import useAuthStore from "../../store/useAuthStore";
+import ReportPost from "../ReportPost/ReportPost";
 
 const PostHeader = ({ post, creatorProfile,profileImageUrl,imageLoading }) => {
         const { handleFollowUser, isFollowing, isUpdating } = useFollowUser(post.createdBy);
@@ -40,6 +41,7 @@ const PostHeader = ({ post, creatorProfile,profileImageUrl,imageLoading }) => {
                         <Box color={"gray.500"}>• {timeAgo(post.created)}</Box>
                     </Flex>
                 </Flex>
+                <Flex alignItems={"center"} gap={1}>
                 {/* "Follow" only shows on posts from people you do not follow yet */}
                 {UseAuth &&creatorProfile && creatorProfile.username&&visitingAnotherProfileAndAuth&&!isFollowing&&(<Box cursor={"pointer"}>
                     <Button
@@ -58,6 +60,8 @@ const PostHeader = ({ post, creatorProfile,profileImageUrl,imageLoading }) => {
                         Follow
                     </Button>
                 </Box>)}
+                {visitingAnotherProfileAndAuth && post?._id && <ReportPost postId={post._id} />}
+                </Flex>
             </Flex>
         );
     };

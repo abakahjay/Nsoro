@@ -2,7 +2,7 @@ import { Box, Flex, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Portal, T
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { PiBookmarkSimpleBold } from "react-icons/pi";
-import { FiDownload, FiSend, FiShield, FiUser } from "react-icons/fi";
+import { FiDownload, FiFileText, FiFlag, FiSend, FiShield, FiUser } from "react-icons/fi";
 import { isInstalled } from "../../utils/install";
 import AppVersion from "../AppVersion/AppVersion";
 
@@ -52,6 +52,14 @@ export default function MoreMenu({ authUser, onLogout }) {
 						Send an update
 					</MenuItem>
 				)}
+				{user?.role === "admin" && (
+					<MenuItem icon={<FiFlag size={18} />} as={RouterLink} to='/admin/reports'>
+						Reported posts
+					</MenuItem>
+				)}
+				<MenuItem icon={<FiFileText size={18} />} as={RouterLink} to='/terms'>
+					Terms & privacy
+				</MenuItem>
 				<MenuItem icon={<FiUser size={18} />} as='a' href='https://portfolio-8jmo.onrender.com/' target='_blank' rel='noreferrer'>
 					About the developer
 				</MenuItem>
