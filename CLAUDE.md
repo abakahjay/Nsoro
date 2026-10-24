@@ -205,3 +205,9 @@ Redux Toolkit, react-query, formik, styled-components and tailwind are in `packa
 `public/push-sw.js` is loaded into the generated service worker (`workbox.importScripts` in vite.config.js). `src/utils/push.js` subscribes this device with app `nsoro` through FullBackendd `/api/v1/push`. The switch is `components/Profile/PushNotificationsToggle.jsx`, under Email notifications in Edit profile. `App.jsx` calls `syncPushSubscription()` after the dashboard refresh.
 
 The backend pushes every like, comment, follow and DM, plus welcome and sign-in emails. The service worker hides a notification while the app is focused. On iPhone and iPad it only works once the app is on the Home Screen.
+
+## Legal and security (keep these)
+
+- Sign-up (email **and** Google) needs the "I'm 13 or older and agree to the Terms and Privacy Policy" checkbox (`pages/Authpage/AuthForm.jsx`, passed to `Signup` and `GoogleAuth` as `needsConsent`).
+- `/terms` and `/privacy` live in `pages/Legal/Legal.jsx`, routed **before** `/:username`. Keep them accurate when features change.
+- Reports: `components/ReportPost` (flag icon in `PostHeader` on other people's posts) posts to `/api/v1/nsoro/posts/:id/report`; admins review at `/admin/reports` (`pages/Admin/Reports.jsx`), where Remove post deletes it for everyone and closes its reports. This is the copyright takedown process; don't remove it.
