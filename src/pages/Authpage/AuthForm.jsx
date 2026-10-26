@@ -1,10 +1,14 @@
 import { Box, Checkbox, Flex, Image, Link, Text, VStack } from "@chakra-ui/react";
+import { RotatingWords } from '../../components/RotatingWords';
 import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import Login from "./Login";
 import Signup from "./Signup";
 import GoogleAuth from "./GoogleAuth";
 //Everything is in pixels
+
+// What people share on Nsoro, from its own description.
+const SHARE_WORDS = ['photos.', 'videos.', 'stories.', 'reels.'];
 
 export function AuthForm({onAuth}){
     const [isLogin, setIsLogin] = useState(true);
@@ -19,6 +23,9 @@ export function AuthForm({onAuth}){
             <Box border={"1px solid gray"} borderRadius={4} padding={5}>
                 <VStack spacing={4}>
                     <Image src='/logo.png' h={24} cursor={"pointer"} alt='Nsoro' />
+                    <Text fontSize={14} color='gray.400' textAlign='center'>
+                        Share your <Text as='span' color='blue.400' fontWeight='600'><RotatingWords words={SHARE_WORDS} /></Text>
+                    </Text>
 
                     {!isLogin && (
                         <Checkbox

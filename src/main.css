@@ -13,3 +13,10 @@
 ::-webkit-scrollbar-thumb:hover {
 	background: #555;
 }
+
+/* Rotating word (components/RotatingWords.jsx): one grid cell, masked vertical swap. */
+.rotating-words { display: inline-grid; vertical-align: bottom; overflow: hidden; padding-bottom: .12em; margin-bottom: -.12em; }
+.rotating-words > span { grid-area: 1 / 1; justify-self: start; white-space: nowrap; opacity: 0; transform: translateY(105%); transition: transform .7s cubic-bezier(.65, 0, .35, 1), opacity .7s ease; }
+.rotating-words > span.is-active { opacity: 1; transform: none; }
+.rotating-words > span.is-leaving { transform: translateY(-105%); }
+@media (prefers-reduced-motion: reduce) { .rotating-words > span { transition: none; } }
